@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mazda 選車小幫手｜1 分鐘找到適合你的車</title>
+  <meta name="description" content="回答幾個生活小問題，幫你從 Mazda 全車系中找出最適合的車款和版本。">
+  <meta property="og:title" content="Mazda 選車小幫手｜1 分鐘找到適合你的車">
+  <meta property="og:description" content="不懂規格也沒關係。回答幾個生活小問題，幫你從 Mazda 全車系找出最適合的車款和版本。">
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#8e1b2c">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <!-- 首頁 -->
+    <section class="screen" id="home">
+      <header class="hero">
+        <p class="eyebrow" id="advisor-line"></p>
+        <h1>Mazda 選車小幫手</h1>
+        <p class="lead">不懂規格也沒關係。<br>回答幾個生活小問題，幫你從全車系找出最適合的車。</p>
+      </header>
+      <p class="question-label">你現在在哪個階段？</p>
+      <button class="route" id="go-quiz">
+        <span class="route-title">我還不知道選哪台</span>
+        <span class="route-desc" id="quiz-desc">回答幾個問題，約 1 分鐘，幫你縮小到最適合的車款</span>
+        <span class="route-arrow" aria-hidden="true">→</span>
+      </button>
+      <button class="route route-disabled" disabled>
+        <span class="route-title">我已經有想比較的車</span>
+        <span class="route-desc">即將推出：選兩台車，只比你在意的項目</span>
+      </button>
+      <p class="fineprint">所有車款資料來自台灣馬自達官方型錄，車款改款時會同步更新。<br>本網站由 Mazda 銷售顧問個人製作，非台灣馬自達官方網站。</p>
+    </section>
+
+    <!-- 問答 -->
+    <section class="screen" id="quiz" hidden>
+      <div class="topbar">
+        <button class="back" id="back" aria-label="上一題">←</button>
+        <div class="progress" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+        <span class="step" id="step"></span>
+      </div>
+      <h2 class="q-title" id="q-title"></h2>
+      <p class="q-sub" id="q-sub"></p>
+      <div class="options" id="options"></div>
+      <div class="bottom">
+        <button class="primary" id="next" disabled>下一題</button>
+      </div>
+    </section>
+
+    <!-- 結果 -->
+    <section class="screen" id="result" hidden>
+      <header class="result-head">
+        <p class="eyebrow">你的選車結果</p>
+        <h2 id="result-title"></h2>
+      </header>
+      <div id="result-notes"></div>
+      <div class="cards" id="cards"></div>
+      <div class="cta">
+        <p class="cta-lead" id="cta-lead"></p>
+        <p class="cta-text">把結果傳給我，幫你確認版本、配備，並安排到展間賞車試乘。</p>
+        <button class="primary line" id="send-line">把結果傳到 LINE</button>
+        <p class="cta-store" id="cta-store"></p>
+      </div>
+      <button class="ghost" id="restart">重新選一次</button>
+      <p class="fineprint" id="disclaimer"></p>
+    </section>
+  </div>
+
+  <div class="modal" id="qr-modal" hidden role="dialog" aria-modal="true" aria-labelledby="qr-title">
+    <div class="modal-box">
+      <button class="modal-close" id="qr-close" aria-label="關閉">×</button>
+      <h3 id="qr-title">用手機掃描，把結果傳給我</h3>
+      <p class="modal-text">打開手機相機或 LINE 掃描下方 QR Code，會自動開啟 LINE 並帶入你的選車結果，按「傳送」就完成了。</p>
+      <div class="qr" id="qr"></div>
+      <p class="modal-text small" id="qr-copied"></p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="vendor/qrcode.js"></script>
+  <script src="config.js"></script>
+  <script src="engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

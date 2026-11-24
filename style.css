@@ -1,0 +1,192 @@
+:root {
+  --bg: #f5f3f0;
+  --card: #ffffff;
+  --ink: #1c1c1e;
+  --muted: #6b6b70;
+  --line: #e4e1dc;
+  --accent: #8e1b2c;
+  --accent-soft: #f6e8ea;
+  --warn-bg: #fff6e0;
+  --warn-ink: #7a5300;
+  --ok: #1f6f4a;
+  --radius: 14px;
+  --font: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+[hidden] { display: none !important; }
+
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px 18px calc(32px + env(safe-area-inset-bottom));
+  min-height: 100vh;
+}
+
+/* 首頁 */
+.hero { padding: 28px 0 8px; }
+.eyebrow { margin: 0 0 6px; font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: .02em; }
+h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
+.lead { margin: 0 0 28px; color: var(--muted); font-size: 16px; }
+.question-label { margin: 0 0 10px; font-weight: 700; }
+.route {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 44px 18px 18px;
+  margin-bottom: 12px;
+  transition: border-color .15s, transform .15s;
+}
+.route:not(:disabled):hover, .route:not(:disabled):focus-visible { border-color: var(--accent); }
+.route:not(:disabled):active { transform: scale(.99); }
+.route-title { display: block; font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.route-desc { display: block; color: var(--muted); font-size: 14px; }
+.route-arrow { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 20px; }
+.route-disabled { opacity: .55; cursor: default; }
+.fineprint { color: var(--muted); font-size: 12px; margin-top: 20px; }
+.error { color: var(--accent); }
+
+/* 問答 */
+.topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+.back {
+  width: 40px; height: 40px; flex: none;
+  border: 1px solid var(--line); background: var(--card); border-radius: 50%;
+  font-size: 18px;
+}
+.progress { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width .25s; }
+.step { font-size: 13px; color: var(--muted); min-width: 40px; text-align: right; }
+.q-title { margin: 0 0 6px; font-size: 23px; line-height: 1.35; }
+.q-sub { margin: 0 0 20px; color: var(--muted); font-size: 14px; min-height: 1em; }
+.options { display: grid; gap: 10px; padding-bottom: 96px; }
+.option {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; min-height: 56px; text-align: left;
+  background: var(--card); border: 1.5px solid var(--line); border-radius: 12px;
+  padding: 12px 16px; font-size: 16px;
+  transition: border-color .12s, background .12s;
+}
+.option:hover { border-color: #c9c4bc; }
+.option .mark {
+  width: 22px; height: 22px; flex: none;
+  border: 2px solid #b9b4ac; border-radius: 50%;
+  display: grid; place-items: center;
+}
+.option.multi .mark { border-radius: 6px; }
+.option[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.option[aria-pressed="true"] .mark { border-color: var(--accent); background: var(--accent); }
+.option[aria-pressed="true"] .mark::after { content: ""; width: 6px; height: 11px; border: solid #fff; border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+.bottom {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  padding: 12px 18px calc(12px + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, var(--bg) 70%, rgba(245, 243, 240, 0));
+}
+.bottom .primary { display: block; max-width: 484px; margin: 0 auto; }
+.primary {
+  width: 100%; min-height: 54px; border: 0; border-radius: 12px;
+  background: var(--accent); color: #fff; font-size: 17px; font-weight: 700;
+}
+.primary:disabled { background: #cfc9c1; }
+.ghost {
+  width: 100%; min-height: 48px; margin-top: 12px;
+  border: 1.5px solid var(--line); background: transparent; border-radius: 12px; color: var(--muted);
+}
+
+/* 結果 */
+.result-head { padding: 12px 0 8px; }
+.result-head h2 { margin: 0; font-size: 26px; }
+.note {
+  background: var(--warn-bg); color: var(--warn-ink);
+  border-radius: 10px; padding: 10px 14px; font-size: 14px; margin: 10px 0;
+}
+.cards { display: grid; gap: 16px; margin: 16px 0 24px; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px 18px;
+}
+.card.top { border: 2px solid var(--accent); }
+.badge {
+  display: inline-block; margin: 0 0 8px; padding: 2px 10px;
+  border-radius: 99px; background: var(--accent-soft); color: var(--accent);
+  font-size: 13px; font-weight: 700;
+}
+.card .car { margin: 0; font-size: 26px; line-height: 1.2; }
+.trim { margin: 4px 0 10px; color: var(--muted); font-size: 15px; }
+.trim .type { margin-left: 8px; padding-left: 8px; border-left: 1px solid var(--line); }
+.price { margin: 0 0 14px; font-size: 22px; font-weight: 700; }
+.price span { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
+.sub { margin: 14px 0 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.reasons { margin: 0; padding-left: 0; list-style: none; }
+.reasons li { position: relative; padding-left: 24px; margin-bottom: 6px; font-size: 15px; }
+.reasons li::before { content: "✓"; position: absolute; left: 2px; color: var(--ok); font-weight: 700; }
+.chips { margin: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { background: #eef5f1; color: var(--ok); border-radius: 99px; padding: 3px 10px; font-size: 13px; }
+.warns { margin: 14px 0 0; padding: 10px 14px 10px 32px; background: var(--warn-bg); color: var(--warn-ink); border-radius: 10px; font-size: 14px; }
+.warns li { margin: 2px 0; }
+.specs {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+  margin: 16px 0 0; background: var(--line); border-radius: 10px; overflow: hidden;
+}
+.specs div { background: #faf9f7; padding: 8px 10px; }
+.specs dt { font-size: 11px; color: var(--muted); }
+.specs dd { margin: 0; font-size: 14px; font-weight: 600; }
+.upgrade { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+
+.cta {
+  background: var(--ink); color: #fff; border-radius: var(--radius);
+  padding: 22px 18px; text-align: center;
+}
+.cta-lead { margin: 0 0 6px; font-size: 18px; font-weight: 700; }
+.cta-text { margin: 0 0 16px; font-size: 14px; color: #d6d4d0; }
+.primary.line { background: #06c755; }
+.cta-store { margin: 12px 0 0; font-size: 12px; color: #b0ada8; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+  background: rgba(28, 28, 30, .92); color: #fff; padding: 10px 16px; border-radius: 10px;
+  font-size: 14px; max-width: 90vw; text-align: center; z-index: 10;
+}
+
+/* QR Code 視窗（電腦版） */
+.modal {
+  position: fixed; inset: 0; z-index: 20;
+  background: rgba(20, 20, 22, .55);
+  display: grid; place-items: center; padding: 20px;
+}
+.modal-box {
+  position: relative; width: 100%; max-width: 380px;
+  background: var(--card); border-radius: 18px; padding: 28px 24px 22px; text-align: center;
+}
+.modal-box h3 { margin: 0 0 8px; font-size: 20px; }
+.modal-text { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+.modal-text.small { margin: 14px 0 0; font-size: 12px; }
+.modal-close {
+  position: absolute; top: 10px; right: 12px; width: 36px; height: 36px;
+  border: 0; background: transparent; font-size: 24px; color: var(--muted);
+}
+.qr { width: 260px; height: 260px; margin: 0 auto; }
+.qr svg { width: 100%; height: 100%; display: block; }
+
+/* 電腦版 */
+@media (min-width: 900px) {
+  .app { max-width: 640px; padding-top: 48px; }
+  #result:not([hidden]) { max-width: 960px; margin: 0 auto; }
+  .app:has(#result:not([hidden])) { max-width: 980px; }
+  .cards { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  h1 { font-size: 38px; }
+  .bottom .primary { max-width: 604px; }
+}
