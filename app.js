@@ -25,6 +25,9 @@
       const [d, r] = await Promise.all([fetch(encodeURI(S.車款資料)), fetch(encodeURI(S.題目規則))]);
       DATA = await d.json();
       RULES = await r.json();
+      window.App.DATA = DATA;
+      window.App.RULES = RULES;
+      document.dispatchEvent(new Event("app-ready"));
       const n = RULES["題目"].filter((q) => !q.只在).length;
       $("quiz-desc").textContent = `回答 ${n} 個問題，約 1 分鐘，幫你縮小到最適合的車款`;
     } catch (e) {
@@ -174,6 +177,7 @@
       `每年養車成本以每年 ${fmt(p.每年行駛公里)} 公里、油價每公升 ${p.油價每公升} 元估算。` +
       `本網站由 ${S.顧問職稱}個人製作，非台灣馬自達官方網站。`;
     window._last = results;
+    $("compare-these").hidden = results.length < 2;
     show("result");
   }
 
@@ -272,8 +276,12 @@
     return `選車小幫手推薦：${cars}，想預約賞車`;
   }
 
-  async function sendLine() {
-    const text = summary();
+  function sendLine() {
+    return sendLineText(summary(), shortSummary());
+  }
+
+  // 共用：手機直接開 LINE；電腦顯示 QR Code（QR 用精簡訊息，避免太密掃不出來）
+  async function sendLineText(text, short) {
     let copied = false;
     try { await navigator.clipboard.writeText(text); copied = true; } catch (e) { /* 部分瀏覽器不允許，略過 */ }
     if (!S.LINE帳號) return toast("LINE 帳號設定中。結果已複製，可以先貼給朋友參考");
@@ -282,7 +290,7 @@
       return;
     }
     const qr = window.qrcode(0, "L");
-    qr.addData(lineUrl(shortSummary()));
+    qr.addData(lineUrl(short));
     qr.make();
     $("qr").innerHTML = qr.createSvgTag({ cellSize: 4, margin: 4, scalable: true });
     $("qr-copied").textContent = copied
@@ -301,12 +309,16 @@
     toastTimer = setTimeout(() => (el.hidden = true), 2600);
   }
 
+  // 給「我要比較」等其他模組使用
+  window.App = { show, toast, sendLineText, fname, typeLabel, fmt, wan, esc, DATA: null, RULES: null };
+
   // ---------- 綁定 ----------
   $("go-quiz").addEventListener("click", startQuiz);
   $("next").addEventListener("click", next);
   $("back").addEventListener("click", back);
   $("restart").addEventListener("click", () => show("home"));
   $("send-line").addEventListener("click", sendLine);
+  $("compare-these").addEventListener("click", () => window.Compare.open(window._last.map((r) => r.t.id)));
   $("qr-close").addEventListener("click", () => ($("qr-modal").hidden = true));
   $("qr-modal").addEventListener("click", (e) => { if (e.target.id === "qr-modal") $("qr-modal").hidden = true; });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("qr-modal").hidden = true; });
