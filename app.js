@@ -236,14 +236,30 @@
   }
 
   // 手機（含 iPad）才能直接打開 LINE App；電腦改用 QR Code
-  // 有些手機瀏覽器（「電腦版網站」模式、App 內建瀏覽器）會自稱電腦，所以也看觸控和螢幕大小
-  function isMobile() {
+  // 判斷是不是手機或平板。有些瀏覽器（Android Chrome 的「電腦版網站」、摺疊機展開時）會自稱電腦，
+  // 也會把螢幕尺寸假裝成電腦，所以以「主要用手指觸控、沒有滑鼠」為準，這個特徵無法偽裝。
+  function deviceInfo() {
     const ua = navigator.userAgent;
-    if (/Android|iPhone|iPad|iPod|Mobile|Line\/|FBAN|FBAV|Instagram/i.test(ua)) return true;
-    if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
-    const touch = navigator.maxTouchPoints > 0 || (window.matchMedia && matchMedia("(pointer: coarse)").matches);
-    const small = Math.min(screen.width, screen.height) <= 1024;
-    return touch && small;
+    const mq = (q) => !!(window.matchMedia && matchMedia(q).matches);
+    const info = {
+      ua: ua,
+      觸控點數: navigator.maxTouchPoints || 0,
+      手指觸控為主: mq("(pointer: coarse)"),
+      無滑鼠懸停: mq("(hover: none)"),
+      有滑鼠或觸控板: mq("(any-pointer: fine)"),
+      螢幕: `${screen.width}x${screen.height}`,
+      平台: (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform,
+    };
+    info.判斷為手機 =
+      /Android|iPhone|iPad|iPod|Mobile|Line\/|FBAN|FBAV|Instagram/i.test(ua) ||
+      (/Macintosh/.test(ua) && info.觸控點數 > 1) ||
+      /Android|iOS/i.test(info.平台) ||
+      (info.觸控點數 > 0 && (info.手指觸控為主 || info.無滑鼠懸停) && !info.有滑鼠或觸控板);
+    return info;
+  }
+
+  function isMobile() {
+    return deviceInfo().判斷為手機;
   }
 
   function lineUrl(text) {
@@ -295,6 +311,14 @@
   $("qr-modal").addEventListener("click", (e) => { if (e.target.id === "qr-modal") $("qr-modal").hidden = true; });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("qr-modal").hidden = true; });
   load();
+
+  // 診斷模式：網址加上 ?debug=1，頁面底部顯示裝置判斷資訊
+  if (/[?&]debug=1/.test(location.search)) {
+    const pre = document.createElement("pre");
+    pre.style.cssText = "white-space:pre-wrap;font-size:12px;background:#fff;border:1px solid #ccc;padding:10px;margin:16px;border-radius:8px";
+    pre.textContent = "診斷資訊（請截圖給顧問）\n" + JSON.stringify(deviceInfo(), null, 2);
+    document.body.appendChild(pre);
+  }
 
   // 測試用：自動作答並顯示結果
   window.__answerAndShow = (a) => { answers = a; showResult(); };
