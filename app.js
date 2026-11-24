@@ -236,9 +236,14 @@
   }
 
   // 手機（含 iPad）才能直接打開 LINE App；電腦改用 QR Code
+  // 有些手機瀏覽器（「電腦版網站」模式、App 內建瀏覽器）會自稱電腦，所以也看觸控和螢幕大小
   function isMobile() {
     const ua = navigator.userAgent;
-    return /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    if (/Android|iPhone|iPad|iPod|Mobile|Line\/|FBAN|FBAV|Instagram/i.test(ua)) return true;
+    if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+    const touch = navigator.maxTouchPoints > 0 || (window.matchMedia && matchMedia("(pointer: coarse)").matches);
+    const small = Math.min(screen.width, screen.height) <= 1024;
+    return touch && small;
   }
 
   function lineUrl(text) {
@@ -267,6 +272,7 @@
     $("qr-copied").textContent = copied
       ? `完整結果也已經複製了。如果你用電腦版 LINE，可以搜尋 ${S.LINE帳號} 加入好友後直接貼上。`
       : `如果你用電腦版 LINE，可以搜尋 ${S.LINE帳號} 加入好友。`;
+    $("qr-direct").href = lineUrl(text);
     $("qr-modal").hidden = false;
   }
 
