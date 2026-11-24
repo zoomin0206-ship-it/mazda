@@ -119,7 +119,9 @@
     if (new Set(current.map((t) => t.車款id)).size !== 1) return null;
     const car = A.DATA["車款"].find((c) => c.id === current[0].車款id);
     const idx = current.map((t) => car.版本.findIndex((v) => v.id === t.id));
-    return (car.版本差異 || []).map((d) => ({ 名稱: d.項目, 值: idx.map((i) => d.值[i]), 布林: true }));
+    return (car.版本差異 || [])
+      .map((d) => ({ 名稱: d.項目, 值: idx.map((i) => d.值[i]), 布林: true }))
+      .filter((r) => !r.值.every((v) => v === false)); // 只有其他版本才有、這幾台都沒有的項目不顯示
   }
 
   function cell(v, isBool, shown, isBest) {
