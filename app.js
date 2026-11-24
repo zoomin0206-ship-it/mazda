@@ -173,7 +173,7 @@
     $("send-line").textContent = S.LINE帳號 ? "把結果傳到 LINE，預約賞車試乘" : "把結果傳到 LINE（帳號設定中）";
     const p = RULES["計算參數"];
     $("disclaimer").textContent =
-      `價格為台灣馬自達公告之建議售價。規格以台灣官方型錄為準。標示 * 的${T.海外數據註記}。` +
+      `價格為台灣馬自達公告之建議售價。規格以台灣官方型錄為準；車輛圖片來源：台灣馬自達官網。標示 * 的${T.海外數據註記}。` +
       `每年養車成本以每年 ${fmt(p.每年行駛公里)} 公里、油價每公升 ${p.油價每公升} 元估算。` +
       `本網站由 ${S.顧問職稱}個人製作，非台灣馬自達官方網站。`;
     window._last = results;
@@ -191,6 +191,8 @@
     return `
       <article class="card${i === 0 ? " top" : ""}">
         <p class="badge">${badge}</p>
+        ${t.圖片 ? `<img class="car-img" src="${esc(t.圖片)}" alt="${esc(t.車款)}" loading="lazy">` : ""}
+        ${t.圖片註記 ? `<p class="img-note">${esc(t.圖片註記)}</p>` : ""}
         <h3 class="car">${esc(t.車款)}</h3>
         <p class="trim">${esc(t.名稱)}<span class="type">${esc(typeLabel(t))}</span></p>
         <p class="price"><span>建議售價</span>${wan(t.建議售價)}元</p>

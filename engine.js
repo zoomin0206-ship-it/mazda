@@ -18,7 +18,8 @@
       if (car.上架 === false) continue;
       const common = car["版本共同規格"] || {};
       for (const t of car["版本"]) {
-        const v = Object.assign({}, common, t, { 車款: car["名稱"], 車款id: car.id, 車型分類: car["車型分類"] });
+        const v = Object.assign({}, common, t, { 車款: car["名稱"], 車款id: car.id, 車型分類: car["車型分類"], 圖片: t["圖片"] || car["圖片"],
+          圖片註記: !t["圖片"] && car["圖片車身"] && car["圖片車身"] !== t["車身類型"] ? `圖為${car["圖片車身"]}車款` : "" });
         v.每年稅金 = tax[v.稅金級距].合計;
         v.每年油錢 = Math.round((p.每年行駛公里 / v.油耗kmL) * p.油價每公升);
         v.每年養車成本 = v.每年稅金 + v.每年油錢;
