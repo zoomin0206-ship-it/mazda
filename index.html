@@ -9,7 +9,7 @@
   <meta property="og:description" content="不懂規格也沒關係。回答幾個生活小問題，幫你從 Mazda 全車系找出最適合的車款和版本。">
   <meta property="og:type" content="website">
   <meta name="theme-color" content="#8e1b2c">
-  <link rel="stylesheet" href="style.css?v=99e12235">
+  <link rel="stylesheet" href="style.css?v=baf617f8">
 </head>
 <body>
   <div class="app" id="app">
@@ -19,6 +19,11 @@
         <p class="eyebrow" id="advisor-line"></p>
         <h1>Mazda 選車小幫手</h1>
         <p class="lead">不懂規格也沒關係。<br>回答幾個生活小問題，幫你從全車系找出最適合的車。</p>
+        <ul class="gets">
+          <li>最適合你的車款和建議版本</li>
+          <li>為什麼適合你：停車、空間、預算一次看懂</li>
+          <li>每年稅金＋油錢估算，沒推薦的車也告訴你原因</li>
+        </ul>
       </header>
       <p class="question-label">你現在在哪個階段？</p>
       <button class="route" id="go-quiz">
@@ -31,6 +36,14 @@
         <span class="route-desc">選兩台車，直接告訴你差多少錢、多了什麼</span>
         <span class="route-arrow" aria-hidden="true">→</span>
       </button>
+      <section class="about" aria-labelledby="about-title">
+        <div class="about-head">
+          <div class="avatar" id="about-avatar" aria-hidden="true"></div>
+          <div><p class="about-name" id="about-name"></p><p class="about-role" id="about-role"></p></div>
+        </div>
+        <h2 class="about-title" id="about-title"></h2>
+        <p class="about-text" id="about-text"></p>
+      </section>
       <p class="fineprint">所有車款資料來自台灣馬自達官方型錄，車款改款時會同步更新。<br>本網站由 Mazda 銷售顧問個人製作，非台灣馬自達官方網站。</p>
     </section>
 
@@ -57,6 +70,10 @@
       </header>
       <div id="result-notes"></div>
       <div class="cards" id="cards"></div>
+      <details class="excluded" id="excluded" hidden>
+        <summary>其他車款為什麼沒有推薦？</summary>
+        <ul id="excluded-list"></ul>
+      </details>
       <button class="ghost strong" id="compare-these" hidden>把這兩台放在一起詳細比較 →</button>
       <div class="cta">
         <p class="cta-lead" id="cta-lead"></p>
@@ -117,9 +134,9 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="vendor/qrcode.js?v=6e6189e2"></script>
-  <script src="config.js?v=fa0e0b9f"></script>
-  <script src="engine.js?v=cc4ceac5"></script>
-  <script src="app.js?v=cca39bf7"></script>
-  <script src="compare.js?v=6e799efc"></script>
+  <script src="config.js?v=5767f183"></script>
+  <script src="engine.js?v=78622ca8"></script>
+  <script src="app.js?v=eb8cb2c1"></script>
+  <script src="compare.js?v=7eea48cb"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@
  * 手機：車款標籤、版本卡片都可以左右滑動；電腦：直接並排。 */
 (function () {
   "use strict";
+  const carType = (x) => (x.endsWith("車") ? x : x + "車"); // 轎車／掀背車／休旅車
   const $ = (id) => document.getElementById(id);
   let A, CFG, TRIMS, CARS, ITEMS;
   let slots = [];        // 每格：{ car: 車款id, trim: 版本id }
@@ -266,8 +267,16 @@
     const mechH = A.RULES["機械車位"].不知道時採用的高度;
     for (const t of sorted.slice(1)) {
       const parts = [];
+      if (t.車身類型 !== base.車身類型) {   // 車型不同是最大的差別，先講
+        const desc = (type) => {
+          const o = A.RULES["題目"].find((q) => q.id === "body").選項.find((x) => x.車身類型 === type);
+          return o ? `（${o.文字.split("：")[1]}）` : "";
+        };
+        parts.push(`${name(t)} 是${carType(t.車身類型)}${desc(t.車身類型)}，${name(base)} 是${carType(base.車身類型)}${desc(base.車身類型)}。`);
+      }
       const diff = t.建議售價 - base.建議售價;
-      parts.push(diff ? `${name(t)} 比 ${name(base)} 貴 <b>${A.wan(diff)}元</b>。` : `${name(t)} 和 ${name(base)} 建議售價一樣。`);
+      const who = parts.length ? "價格上，前者" : `${name(t)} 比 ${name(base)}`;
+      parts.push(diff ? `${who}貴 <b>${A.wan(diff)}元</b>。` : `${parts.length ? "兩台" : `${name(t)} 和 ${name(base)} `}建議售價一樣。`);
       const gain = [], lose = [];
       if (t.驅動 !== base.驅動 && t.驅動.includes("四輪")) gain.push("四輪驅動");
       const has = (v) => v === true || (typeof v === "string" && v !== "");

@@ -186,7 +186,33 @@
     fit = fit.slice(0, rule.推薦數量);
     if (fit.length > 1 && fit[1].預算 !== "over" &&
         (fit[1].分數 < 0 || fit[1].分數 < fit[0].分數 * rule.第二名門檻)) fit = fit.slice(0, 1);
-    return { results: fit, notes: notes };
+    // 其他車款為什麼沒有推薦（讓客戶知道系統考慮過哪些車）
+    const picked = new Set(fit.map((r) => r.t.車款id));
+    const byModel = new Map();
+    for (const t of trims) {
+      if (!byModel.has(t.車款id)) byModel.set(t.車款id, []);
+      byModel.get(t.車款id).push(t);
+    }
+    const excluded = [];
+    for (const [id, ts] of byModel) {
+      if (picked.has(id)) continue;
+      const name = ts[0].車款;
+      const r = results.find((x) => x.t.車款id === id);
+      const maxSeat = Math.max(...ts.map((t) => t.座位數));
+      const minH = Math.min(...ts.map((t) => t.全高));
+      const minP = Math.min(...ts.map((t) => t.建議售價));
+      let why;
+      if (maxSeat < minSeats) why = `只有 ${maxSeat} 個座位，坐不下你需要的人數`;
+      else if (heightCap && !tooTall && minH > heightCap) why = `車高 ${minH.toLocaleString()} mm，停不進限高 ${heightCap.toLocaleString()} mm 的機械車位`;
+      else if (!r) why = "不符合你的條件";
+      else if (r.預算 === "over") why = `最便宜的版本 ${(minP / 10000).toFixed(1).replace(/\.0$/, "")} 萬元，超出你的預算`;
+      else if (bodies.size && !bodies.has(r.t.車身類型)) why = `是${r.t.車身類型.endsWith("車") ? r.t.車身類型 : r.t.車身類型 + "車"}，不是你喜歡的車型`;
+      else if (r.t.行李廂L !== null && r.t.行李廂L !== undefined && r.t.行李廂L < minTrunk) why = `後車廂 ${r.t.行李廂L} L，對你的需求來說偏小`;
+      else if (r.缺少.length) why = `預算內的版本沒有你需要的：${r.缺少.join("、")}`;
+      else why = "也符合你的條件，但整體適合度排在後面，可以用「我要比較」詳細比較";
+      excluded.push({ 車款: name, 車款id: id, 原因: why });
+    }
+    return { results: fit, notes: notes, excluded: excluded };
   }
 
   global.Engine = { recommend: recommend, opt: opt, loadTrims: loadTrims };

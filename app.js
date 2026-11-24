@@ -1,6 +1,7 @@
 /* 選車小幫手：畫面流程。題目、選項文字全部讀自 題目與規則.json */
 (function () {
   "use strict";
+  const carType = (x) => (x.endsWith("車") ? x : x + "車"); // 轎車／掀背車／休旅車
   const S = window.SITE;
   let DATA = null, RULES = null;
   let answers = {}, history = [], current = null;
@@ -21,6 +22,11 @@
   // ---------- 載入 ----------
   async function load() {
     $("advisor-line").textContent = `${S.展間}｜${S.顧問職稱} ${S.顧問名稱}`;
+    $("about-avatar").textContent = S.顧問名稱.slice(-1);
+    $("about-name").textContent = `${S.顧問職稱} ${S.顧問名稱}`;
+    $("about-role").textContent = `${S.展間}｜${S.年資.replace(/^在 Mazda /, "")}`;
+    $("about-title").textContent = S.自我介紹標題;
+    $("about-text").textContent = S.自我介紹;
     try {
       const [d, r] = await Promise.all([fetch(encodeURI(S.車款資料)), fetch(encodeURI(S.題目規則))]);
       DATA = await d.json();
@@ -58,10 +64,12 @@
 
   function showQuestion(qid) {
     current = RULES["題目"].find((q) => q.id === qid);
-    const list = flow();
-    const idx = list.findIndex((q) => q.id === qid);
-    $("step").textContent = `${idx + 1} / ${list.length}`;
-    $("progress-bar").style.width = `${((idx + 1) / list.length) * 100}%`;
+    // 進度只算主要題目；追問題（例如機械車位限高）沿用上一題的題號
+    const main = RULES["題目"].filter((q) => !q.只在);
+    const parentId = current.只在 ? current.只在.split("=")[0] : qid;
+    const idx = main.findIndex((q) => q.id === parentId);
+    $("step").textContent = `${idx + 1} / ${main.length}`;
+    $("progress-bar").style.width = `${((idx + 1) / main.length) * 100}%`;
     $("q-title").textContent = current.題目;
     $("q-sub").textContent = current.副標 || (current.類型 === "單選" ? "選一個最接近的" : "");
     const multi = current.類型 === "複選";
@@ -163,11 +171,14 @@
   const overseas = (t) => t.行李廂來源 && !t.行李廂來源.startsWith("台灣");
 
   function showResult() {
-    const { results, notes } = window.Engine.recommend(DATA, RULES, answers);
+    const { results, notes, excluded } = window.Engine.recommend(DATA, RULES, answers);
+    $("excluded").hidden = !excluded.length;
+    $("excluded").open = true;
+    $("excluded-list").innerHTML = excluded.map((x) => `<li><b>${esc(x.車款)}</b>：${esc(x.原因)}</li>`).join("");
     const T = RULES["結果頁文字"];
     $("result-title").textContent = results.length > 1 ? "最適合你的兩款車" : "最適合你的車";
     $("result-notes").innerHTML = notes.map((n) => `<p class="note">${esc(n)}</p>`).join("");
-    $("cards").innerHTML = results.map((r, i) => card(r, i, results.length)).join("");
+    $("cards").innerHTML = results.map((r, i) => card(r, i, results.length, results[0])).join("");
     $("cta-lead").textContent = T.結尾;
     $("cta-store").textContent = `${S.展間}（${S.展間地區}）｜${S.顧問職稱} ${S.顧問名稱}`;
     $("send-line").textContent = S.LINE帳號 ? "把結果傳到 LINE，預約賞車試乘" : "把結果傳到 LINE（帳號設定中）";
@@ -181,7 +192,41 @@
     show("result");
   }
 
-  function card(r, i, n) {
+  // 配備差異：b 比 a 多了哪些（依「配備對照清單」，也看驅動方式）
+  function gains(a, b) {
+    const out = [];
+    const has = (v) => v === true || (typeof v === "string" && v !== "");
+    if (a.驅動 !== b.驅動 && b.驅動.includes("四輪")) out.push("四輪驅動");
+    for (const it of DATA["配備對照清單"] || []) {
+      const x = a.配備 && a.配備[it.key], y = b.配備 && b.配備[it.key];
+      if (has(y) && x === false) out.push(it.名稱);
+      else if (it.亮點關鍵字 && typeof x === "string" && typeof y === "string" &&
+               y.includes(it.亮點關鍵字) && !x.includes(it.亮點關鍵字)) out.push(it.亮點名稱);
+    }
+    return out;
+  }
+  const listText = (arr, max) => arr.slice(0, max).join("、") + (arr.length > max ? ` 等 ${arr.length} 項` : "");
+  const bodyDesc = (type) => {
+    const o = RULES["題目"].find((q) => q.id === "body").選項.find((x) => x.車身類型 === type);
+    return o ? o.文字.split("：")[1] : "";
+  };
+
+  function versusFirst(t, first) {
+    const parts = [];
+    const d = t.建議售價 - first.建議售價;
+    if (d) parts.push(`${d < 0 ? "便宜" : "貴"} ${wan(Math.abs(d))}元`);
+    if (t.車身類型 !== first.車身類型) parts.push(`是${carType(t.車身類型)}（${bodyDesc(t.車身類型)}）`);
+    if (t.行李廂L && first.行李廂L && Math.abs(t.行李廂L - first.行李廂L) >= 30) {
+      parts.push(`後車廂${t.行李廂L > first.行李廂L ? "大" : "小"} ${Math.abs(t.行李廂L - first.行李廂L)} L`);
+    }
+    const more = gains(first, t), less = gains(t, first);
+    let s = parts.join("、");
+    if (more.length) s += `${s ? "；" : ""}多了：${listText(more, 3)}`;
+    if (less.length) s += `${s ? "；" : ""}少了：${listText(less, 3)}`;
+    return s;
+  }
+
+  function card(r, i, n, firstR) {
     const t = r.t;
     const reasons = r.原因.map((k) => REASON[k] && REASON[k](t)).filter(Boolean);
     const hc = heightCap();
@@ -207,8 +252,15 @@
           <div><dt>驅動</dt><dd>${t.驅動.includes("四輪") ? "四輪驅動" : t.驅動.includes("後輪") ? "後輪驅動" : "前輪驅動"}</dd></div>
           <div><dt>每年養車約</dt><dd>${wan(Math.round(t.每年養車成本 / 1000) * 1000)}</dd></div>
         </dl>
-        ${r.可升級 ? `<p class="upgrade">預算內最高可以選到 <b>${esc(r.可升級.名稱)}</b>（建議售價 ${wan(r.可升級.建議售價)}元）</p>` : ""}
+        ${i > 0 && firstR ? `<p class="versus"><b>和第一推薦（${esc(firstR.t.車款)} ${esc(firstR.t.名稱)}）比：</b>${esc(versusFirst(t, firstR.t))}</p>` : ""}
+        ${r.可升級 ? upgradeText(r) : ""}
       </article>`;
+  }
+
+  function upgradeText(r) {
+    const up = r.可升級, g = gains(r.t, up);
+    return `<p class="upgrade">預算內可以升級：多 ${wan(up.建議售價 - r.t.建議售價)}元選 <b>${esc(up.名稱)}</b>，` +
+      (g.length ? `多了：${esc(listText(g, 5))}` : "主要差在外觀細節") + `</p>`;
   }
 
   function heightCap() {
