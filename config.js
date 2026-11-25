@@ -13,4 +13,5 @@ window.SITE = {
   // 資料檔位置（相對於 web 資料夾）
   車款資料: "data/cars.json",
   題目規則: "data/rules.json",
+  車款介紹: "data/intro.json",
 };

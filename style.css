@@ -270,6 +270,56 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .color-name span { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
 .card .car-img { display: block; width: 100%; max-width: 320px; height: 80px; object-fit: contain; object-position: left center; margin: 4px 0 6px; }
 
+/* 車款列表、車款介紹 */
+.model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-bottom: 30px; }
+.model-card { text-align: left; background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 12px; }
+.model-card:hover { border-color: var(--accent); }
+.model-card img { width: 100%; aspect-ratio: 900 / 460; object-fit: contain; margin-bottom: 6px; }
+.model-card b { display: block; font-size: 17px; }
+.model-card span { display: block; font-size: 12px; color: var(--muted); }
+.model-card .mc-price { color: var(--ink); font-weight: 700; margin-top: 4px; font-size: 13px; }
+.mp-hero { padding: 6px 0 10px; }
+.mp-name { margin: 0; font-size: 34px; line-height: 1.15; }
+.mp-tagline { margin: 6px 0 0; font-size: 17px; font-weight: 700; }
+.mp-price { margin: 10px 0 4px; font-size: 20px; font-weight: 700; }
+.mp-price span { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
+.mp-price small { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--muted); }
+.mp-hero .car-img.big { width: 100%; max-width: 560px; height: auto; aspect-ratio: 900 / 460; object-fit: contain; display: block; margin: 0 auto 8px; }
+.mp-sec { margin: 30px 0 0; }
+.mp-sec h2 { font-size: 20px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+.mp-sec h2 .by { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 99px; padding: 2px 8px; }
+.two-col { display: grid; gap: 12px; }
+.fit-box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.fit-box h3 { margin: 0 0 6px; font-size: 15px; }
+.fit-box.good h3 { color: var(--ok); } .fit-box.bad h3 { color: var(--warn-ink); }
+.fit-box ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.ladder { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 10px; }
+.ld { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+.ld.rec { border: 2px solid var(--accent); }
+.ld-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.ld-head b { font-size: 16px; } .ld-head span { font-weight: 700; }
+.ld-head em { font-style: normal; font-size: 12px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 99px; padding: 1px 8px; }
+.ld-sub { margin: 6px 0 2px; font-size: 13px; color: var(--muted); }
+.ld ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.ld li.more { list-style: none; margin-left: -18px; color: var(--muted); }
+.ld-why { margin: 8px 0 0; padding: 8px 10px; background: var(--accent-soft); border-radius: 8px; font-size: 14px; }
+.ladder-body { font-size: 15px; margin: 14px 0 8px; color: var(--muted); }
+.faq { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+.faq summary { font-weight: 700; cursor: pointer; }
+.faq p { margin: 8px 0 0; font-size: 14px; }
+.life { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--line); border-radius: 12px; overflow: hidden; margin: 0; }
+.life div { background: #fff; padding: 10px 14px; display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+.life dt { font-size: 13px; color: var(--muted); } .life dd { margin: 0; font-size: 14px; font-weight: 600; }
+.life div.ok dd { color: var(--ok); } .life div.warn dd { color: var(--warn-ink); }
+.rivals { display: grid; gap: 10px; }
+.rival { position: relative; display: grid; grid-template-columns: 110px 1fr; grid-template-rows: auto auto; column-gap: 12px; text-align: left;
+  background: var(--card); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 10px 14px; }
+.rival img { grid-row: span 2; width: 110px; aspect-ratio: 900 / 460; object-fit: contain; align-self: center; }
+.rival b { font-size: 15px; } .rival span { font-size: 12px; color: var(--muted); }
+.rival i { position: absolute; right: 14px; top: 12px; font-style: normal; font-size: 13px; color: var(--accent); }
+.more-link { margin-top: 12px; border: 0; background: none; padding: 0; color: var(--accent); font-weight: 700; font-size: 14px; }
+#model .cta { margin-top: 30px; }
+
 /* QR Code 視窗（電腦版） */
 .modal {
   position: fixed; inset: 0; z-index: 20;
@@ -312,4 +362,9 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
   .swipe.trims .trim-card { width: 100%; max-width: none; }
   .swipe-hint { display: none; }
   .cmp-img { height: 64px; }
+  .app:has(#model:not([hidden])), .app:has(#models:not([hidden])) { max-width: 900px; }
+  .model-grid { grid-template-columns: repeat(3, 1fr); }
+  .two-col { grid-template-columns: 1fr 1fr; }
+  .life { grid-template-columns: 1fr 1fr; }
+  .rivals { grid-template-columns: 1fr 1fr; }
 }

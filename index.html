@@ -12,7 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="img/brand/logo.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png">
   <link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=d047bf5e">
+  <link rel="stylesheet" href="style.css?v=988a116d">
 </head>
 <body>
   <div class="app" id="app">
@@ -37,6 +37,11 @@
       <button class="route" id="go-compare" disabled>
         <span class="route-title">我已經有想比較的車</span>
         <span class="route-desc">選兩台車，直接告訴你差多少錢、多了什麼</span>
+        <span class="route-arrow" aria-hidden="true">→</span>
+      </button>
+      <button class="route" id="go-models" disabled>
+        <span class="route-title">我想了解某一台車</span>
+        <span class="route-desc">版本怎麼選、適合誰、在台灣開的實際資訊</span>
         <span class="route-arrow" aria-hidden="true">→</span>
       </button>
       <section class="about" aria-labelledby="about-title">
@@ -121,6 +126,32 @@
       <button class="ghost" id="cmp-home">回首頁</button>
       <p class="fineprint" id="cmp-foot"></p>
     </section>
+
+    <!-- 車款列表 -->
+    <section class="screen" id="models" hidden>
+      <div class="topbar">
+        <button class="back" id="models-back" aria-label="回首頁">←</button>
+        <span class="topbar-title">車款介紹</span>
+      </div>
+      <h2 class="q-title">你想了解哪一台車？</h2>
+      <div class="model-grid" id="model-list"></div>
+    </section>
+
+    <!-- 單一車款介紹 -->
+    <section class="screen" id="model" hidden>
+      <div class="topbar">
+        <button class="back" id="model-back" aria-label="回車款列表">←</button>
+        <span class="topbar-title">車款介紹</span>
+      </div>
+      <div id="model-body"></div>
+      <div class="cta">
+        <p class="cta-lead" id="model-cta-lead">想親自坐坐看？</p>
+        <p class="cta-text">傳 LINE 給我，幫你安排賞車、試乘，也可以問我任何關於這台車的問題。</p>
+        <button class="primary line" id="model-line">傳 LINE 預約試乘</button>
+      </div>
+      <button class="ghost" id="model-quiz">不確定適不適合？用 8 個問題確認 →</button>
+      <p class="fineprint" id="model-foot"></p>
+    </section>
   </div>
 
   <div class="modal" id="qr-modal" hidden role="dialog" aria-modal="true" aria-labelledby="qr-title">
@@ -137,9 +168,10 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="vendor/qrcode.js?v=6e6189e2"></script>
-  <script src="config.js?v=44ebbef3"></script>
+  <script src="config.js?v=84fa1614"></script>
   <script src="engine.js?v=e7769583"></script>
-  <script src="app.js?v=baf18c40"></script>
+  <script src="app.js?v=411569e8"></script>
   <script src="compare.js?v=eec33090"></script>
+  <script src="model.js?v=464f70bf"></script>
 </body>
 </html>

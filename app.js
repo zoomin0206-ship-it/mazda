@@ -254,12 +254,14 @@
         </dl>
         ${i > 0 && firstR ? `<p class="versus"><b>和第一推薦（${esc(firstR.t.車款)} ${esc(firstR.t.名稱)}）比：</b>${esc(versusFirst(t, firstR.t))}</p>` : ""}
         ${r.可升級 ? upgradeText(r) : ""}
+        <button type="button" class="more-link" data-model="${esc(t.車款id)}">看 ${esc(t.車款)} 完整介紹 →</button>
       </article>`;
   }
 
   // ---------- 車色 ----------
   // 客戶選的車色：{ 版本id: 代號 }，比較頁和 LINE 訊息都會用到
   const chosenColor = {};
+  let ALL_TRIMS = null;
   function colorOf(t) {
     const cols = t.車色 || [];
     return cols.find((c) => c.代號 === (chosenColor[t.id] || t.預設車色)) || cols[0] || null;
@@ -280,7 +282,8 @@
     const b = e.target.closest(".swatch");
     if (!b) return;
     const box = b.closest(".color-viewer");
-    const t = (window._last || []).map((r) => r.t).find((x) => x.id === box.dataset.trim);
+    ALL_TRIMS = ALL_TRIMS || window.Engine.loadTrims(DATA, RULES);
+    const t = ALL_TRIMS.find((x) => x.id === box.dataset.trim);
     if (!t) return;
     chosenColor[t.id] = b.dataset.code;
     const tmp = document.createElement("div");
@@ -402,7 +405,8 @@
   }
 
   // 給「我要比較」等其他模組使用
-  window.App = { show, toast, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, DATA: null, RULES: null };
+  window.App = { show, toast, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, colorViewer, preloadColors, gains, listText,
+    isMobileDevice: () => isMobile(), DATA: null, RULES: null };
 
   // ---------- 綁定 ----------
   $("go-quiz").addEventListener("click", startQuiz);
@@ -410,7 +414,8 @@
   $("back").addEventListener("click", back);
   $("restart").addEventListener("click", () => show("home"));
   $("send-line").addEventListener("click", sendLine);
-  $("cards").addEventListener("click", onSwatch);
+  document.addEventListener("click", onSwatch);  // 結果頁、車款介紹頁的色點都適用
+  $("cards").addEventListener("click", (e) => { const b = e.target.closest(".more-link"); if (b) window.Model.open(b.dataset.model); });
   $("compare-these").addEventListener("click", () => window.Compare.open(window._last.map((r) => r.t.id)));
   $("qr-close").addEventListener("click", () => ($("qr-modal").hidden = true));
   $("qr-modal").addEventListener("click", (e) => { if (e.target.id === "qr-modal") $("qr-modal").hidden = true; });
