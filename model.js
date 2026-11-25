@@ -228,8 +228,8 @@
   function sendLine() {
     const c = A.colorOf(heroTrim);
     const color = c ? `（${c.名稱}）` : "";
-    const full = `你好，我看了選車小幫手的 ${current.名稱} 介紹，想約時間試乘 ${current.名稱}${color}。`;
-    A.sendLineText(full, `想試乘 ${current.名稱}${color}（選車小幫手）`);
+    const full = `你好，我看了士倫車 Mazda 選車指南的 ${current.名稱} 介紹，想約時間試乘 ${current.名稱}${color}。`;
+    A.sendLineText(full, `想試乘 ${current.名稱}${color}（士倫車選車指南）`);
   }
 
   // ---------- 綁定 ----------

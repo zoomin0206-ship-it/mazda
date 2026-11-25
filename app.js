@@ -1,4 +1,4 @@
-/* 選車小幫手：畫面流程。題目、選項文字全部讀自 題目與規則.json */
+/* 士倫車 Mazda 選車指南：畫面流程。題目、選項文字全部讀自 題目與規則.json */
 (function () {
   "use strict";
   const carType = (x) => (x.endsWith("車") ? x : x + "車"); // 轎車／掀背車／休旅車
@@ -318,7 +318,7 @@
 
   // ---------- LINE ----------
   function summary() {
-    const lines = ["你好，我用了選車小幫手，結果是："];
+    const lines = ["你好，我用了士倫車 Mazda 選車指南，結果是："];
     window._last.forEach((r, i) => {
       const c = colorOf(r.t);
       lines.push(`${i + 1}. ${r.t.車款} ${r.t.名稱}${c ? `（${c.名稱}）` : ""}`);
@@ -368,7 +368,7 @@
   // QR Code 用的精簡版訊息（太長的話 QR Code 會太密、不好掃）
   function shortSummary() {
     const cars = window._last.map((r) => { const c = colorOf(r.t); return `${r.t.車款} ${r.t.名稱}${c ? `（${c.名稱}）` : ""}`; }).join("／");
-    return `選車小幫手推薦：${cars}，想預約賞車`;
+    return `士倫車選車指南推薦：${cars}，想預約賞車`;
   }
 
   function sendLine() {

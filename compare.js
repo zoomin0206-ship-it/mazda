@@ -318,8 +318,8 @@
   function sendLine() {
     const col = (t) => { const c = A.colorOf(t); return c ? `（${c.名稱}）` : ""; };
     const list = current.map((t, i) => `${i + 1}. ${t.車款} ${t.名稱}${col(t)}`).join("\n");
-    const full = `你好，我用選車小幫手比較了：\n${list}\n\n${current.length === 2 ? "兩台" : "這幾台"}都想實際試試看，想約時間試乘比較。`;
-    const short = `選車小幫手比較：${current.map((t) => `${t.車款} ${t.名稱}`).join("／")}，想約試乘比較`;
+    const full = `你好，我用士倫車 Mazda 選車指南比較了：\n${list}\n\n${current.length === 2 ? "兩台" : "這幾台"}都想實際試試看，想約時間試乘比較。`;
+    const short = `士倫車選車指南比較：${current.map((t) => `${t.車款} ${t.名稱}`).join("／")}，想約試乘比較`;
     A.sendLineText(full, short);
   }
 
