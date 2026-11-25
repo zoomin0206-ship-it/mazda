@@ -60,7 +60,8 @@
     current = CARS.find((c) => c.id === carId);
     const ts = trimsOf(carId);
     const intro = INTRO[carId] || {};
-    heroTrim = ts.find((t) => t.id === intro.推薦版本) || ts[0];
+    const recs = [].concat(intro.推薦版本 || []);   // 可以推薦一個或多個版本
+    heroTrim = ts.find((t) => t.id === recs[0]) || ts[0];
     A.preloadColors([heroTrim]);
     setUrl(carId);
 
@@ -118,7 +119,7 @@
 
   // 版本階梯：多花多少、多了什麼（同車身才比）
   function ladder(ts, intro) {
-    const rec = intro.推薦版本;
+    const recs = [].concat(intro.推薦版本 || []);
     const bodies = [...new Set(ts.map((t) => t.車身類型))];
     let html = "";
     for (const body of bodies) {
@@ -133,11 +134,11 @@
           detail = `<p class="ld-sub">比 ${esc(prev.名稱)} 多 <b>${wan(t.建議售價 - prev.建議售價)}元</b>${g.length ? "，多了：" : "，主要差在外觀細節"}</p>` +
             (g.length ? `<ul>${g.slice(0, 8).map((x) => `<li>${esc(x)}</li>`).join("")}${g.length > 8 ? `<li class="more">等共 ${g.length} 項</li>` : ""}</ul>` : "");
         }
-        const isRec = t.id === rec;
+        const isRec = recs.includes(t.id);
         return `<li class="ld${isRec ? " rec" : ""}">
           <div class="ld-head"><b>${esc(t.名稱)}</b><span>${wan(t.建議售價)}元</span>${isRec ? `<em>士倫推薦</em>` : ""}</div>
           ${detail}
-          ${isRec && filled(intro.推薦理由) ? `<p class="ld-why"><b>為什麼推薦：</b>${esc(intro.推薦理由)}</p>` : ""}
+          ${isRec && filled(intro.推薦理由) && t.id === recs.find((id) => list.some((x) => x.id === id)) ? `<p class="ld-why"><b>為什麼推薦：</b>${esc(intro.推薦理由)}</p>` : ""}
         </li>`;
       }).join("") + `</ol>`;
     }
@@ -169,7 +170,10 @@
     const mechH = A.RULES["機械車位"].不知道時採用的高度;
     const maxH = Math.max(...ts.map((t) => t.全高));
     const fits = maxH <= mechH;
-    const cost = range(ts, "每年養車成本");
+    // 每年養車成本四捨五入到千元，用「萬」顯示（例如 約 4.7 萬元）
+    const cs = [...new Set(ts.map((t) => Math.round(t.每年養車成本 / 1000) * 1000))];
+    const lo = Math.min(...cs), hi = Math.max(...cs);
+    const cost = lo === hi ? wan(lo) : `${wan(lo).replace(" 萬", "")}～${wan(hi)}`;
     const overseas = ts.some((t) => t.行李廂來源 && !t.行李廂來源.startsWith("台灣"));
     const rows = [
       ["機械車位", fits ? `✓ 停得進限高 ${A.fmt(mechH)} mm 的機械車位` : `車高 ${A.fmt(maxH)} mm，停不進限高 ${A.fmt(mechH)} mm 的機械車位`, fits ? "ok" : "warn"],
@@ -182,7 +186,7 @@
       ["馬力", range(ts, "馬力ps", " ps")],
       ["驅動", [...new Set(ts.map((t) => (t.驅動.includes("四輪") ? "四輪驅動" : t.驅動.includes("後輪") ? "後輪驅動" : "前輪驅動")))].join("／")],
       ["油耗", range(ts, "油耗kmL", " km/L")],
-      ["每年稅金＋油錢", `約 ${cost} 元`],
+      ["每年稅金＋油錢", `約 ${cost}元`],
     ];
     return `<dl class="life">${rows.map(([k, v, cls]) => `<div class="${cls || ""}"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`;
   }
