@@ -67,7 +67,7 @@
     const sections = [];
     // 1 開場
     sections.push(`<header class="mp-hero">
-      <p class="eyebrow">${esc(current.車型分類)}</p>
+      <p class="eyebrow">${esc(current.車型分類)}${current.產地 ? `｜${esc(current.產地)}` : ""}</p>
       <h1 class="mp-name">${esc(current.名稱)}</h1>
       ${filled(intro.一句話) ? `<p class="mp-tagline">${esc(intro.一句話)}</p>` : ""}
       <p class="mp-price"><span>建議售價</span>${priceRange(ts)}<small>共 ${ts.length} 個版本</small></p>
@@ -90,8 +90,9 @@
       </div>`, true));
     }
     // 5 展間最常被問的問題
-    if (filled(intro.常見問題)) {
-      sections.push(section("展間最常被問的問題", "faq", intro.常見問題.map((q) =>
+    const faq = (intro.常見問題 || []).filter((q) => q.問 && q.答);
+    if (faq.length) {
+      sections.push(section("展間最常被問的問題", "faq", faq.map((q) =>
         `<details class="faq"><summary>${esc(q.問)}</summary><p>${esc(q.答)}</p></details>`).join(""), true));
     }
     // 6 台灣生活實用資訊
@@ -128,8 +129,7 @@
         let detail;
         if (!prev) detail = `<p class="ld-sub">入門版本，基本配備就有：</p><ul>${(current.全車系標配重點 || []).slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
         else {
-          const g = A.gains(prev, t);
-          if (prev.引擎 !== t.引擎) g.unshift(t.引擎);
+          const g = stepGains(prev, t);
           detail = `<p class="ld-sub">比 ${esc(prev.名稱)} 多 <b>${wan(t.建議售價 - prev.建議售價)}元</b>${g.length ? "，多了：" : "，主要差在外觀細節"}</p>` +
             (g.length ? `<ul>${g.slice(0, 8).map((x) => `<li>${esc(x)}</li>`).join("")}${g.length > 8 ? `<li class="more">等共 ${g.length} 項</li>` : ""}</ul>` : "");
         }
@@ -148,6 +148,22 @@
     return html;
   }
 
+  // 這款車自己的「版本差異」：上一個版本沒有、這個版本有的，或是規格升級的
+  function stepGains(prev, t) {
+    const idx = (x) => current.版本.findIndex((v) => v.id === x.id);
+    const a = idx(prev), b = idx(t), out = [];
+    if (prev.引擎 !== t.引擎) out.push(t.引擎);
+    if (prev.驅動 !== t.驅動 && t.驅動.includes("四輪")) out.push("四輪驅動");
+    for (const d of current.版本差異 || []) {
+      const x = d.值[a], y = d.值[b];
+      if (y === x || y === false || y === null || y === undefined) continue;
+      if (y === true) out.push(d.項目);
+      else if (x === false) out.push(`${d.項目}（${y}）`);
+      else out.push(`${d.項目}：${y}`);
+    }
+    return out.length ? out : A.gains(prev, t);   // 沒有版本差異資料時，用通用的配備對照
+  }
+
   // 台灣生活實用資訊
   function lifeInfo(ts) {
     const mechH = A.RULES["機械車位"].不知道時採用的高度;
@@ -157,6 +173,7 @@
     const overseas = ts.some((t) => t.行李廂來源 && !t.行李廂來源.startsWith("台灣"));
     const rows = [
       ["機械車位", fits ? `✓ 停得進限高 ${A.fmt(mechH)} mm 的機械車位` : `車高 ${A.fmt(maxH)} mm，停不進限高 ${A.fmt(mechH)} mm 的機械車位`, fits ? "ok" : "warn"],
+      ...(current.產地 ? [["產地", current.產地]] : []),
       ["車身尺寸", `長 ${range(ts, "全長")} × 寬 ${range(ts, "全寬")} × 高 ${range(ts, "全高")} mm`],
       ["迴轉半徑", `${range(ts, "迴轉半徑")} m`],
       ["座位", range(ts, "座位數", " 人")],
