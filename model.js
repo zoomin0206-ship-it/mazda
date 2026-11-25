@@ -63,6 +63,8 @@
     const recs = [].concat(intro.推薦版本 || []);   // 可以推薦一個或多個版本
     heroTrim = ts.find((t) => t.id === recs[0]) || ts[0];
     A.preloadColors([heroTrim]);
+    const recColor = intro.推薦車色 && (heroTrim.車色 || []).find((c) => c.代號 === intro.推薦車色);
+    if (recColor && !A.hasColor(heroTrim.id)) A.setColor(heroTrim.id, recColor.代號);
     setUrl(carId);
 
     const sections = [];
@@ -75,6 +77,7 @@
         `<li>🛡️ ${esc(r.地區)} ${esc(r.機構)}${r.機構 === "IIHS" ? " " + r.年份 : ""} ${esc(r.等級)}</li>`).join("")}</ul>` : ""}
       <p class="mp-price"><span>建議售價</span>${priceRange(ts)}<small>共 ${ts.length} 個版本</small></p>
       ${A.colorViewer(heroTrim)}
+      ${recColor ? `<p class="rec-color">士倫最常推薦：<b>${esc(recColor.名稱)}</b></p>` : ""}
     </header>`);
     // 2 適合誰／不適合誰
     if (filled(intro.適合) || filled(intro.不適合)) {
@@ -84,7 +87,7 @@
       </div>`, true));
     }
     // 3 版本怎麼選
-    sections.push(section("版本怎麼選？", "trims", ladder(ts, intro)));
+    sections.push(section(ts.length > 1 ? "版本怎麼選？" : "標準配備有哪些？", "trims", ladder(ts, intro)));
     // 4 優缺點
     if (filled(intro.優點) || filled(intro.缺點)) {
       sections.push(section("實際的優點和缺點", "proscons", `<div class="two-col">
@@ -138,7 +141,7 @@
       html += `<ol class="ladder">` + list.map((t, i) => {
         const prev = list[i - 1];
         let detail;
-        if (!prev) detail = `<p class="ld-sub">入門版本，基本配備就有：</p><ul>${(current.全車系標配重點 || []).slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+        if (!prev) detail = `<p class="ld-sub">${ts.length > 1 ? "入門版本，基本配備就有：" : "單一版本，標準配備有："}</p><ul>${(current.全車系標配重點 || []).slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
         else {
           const g = stepGains(prev, t);
           detail = `<p class="ld-sub">比 ${esc(prev.名稱)} 多 <b>${wan(t.建議售價 - prev.建議售價)}元</b>${g.length ? "，多了：" : "，主要差在外觀細節"}</p>` +

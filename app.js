@@ -405,7 +405,9 @@
   }
 
   // 給「我要比較」等其他模組使用
-  window.App = { show, toast, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, colorViewer, preloadColors, gains, listText,
+  const setColor = (trimId, code) => { chosenColor[trimId] = code; };
+  const hasColor = (trimId) => trimId in chosenColor;
+  window.App = { show, toast, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, colorViewer, preloadColors, gains, listText, setColor, hasColor,
     isMobileDevice: () => isMobile(), DATA: null, RULES: null };
 
   // ---------- 綁定 ----------
