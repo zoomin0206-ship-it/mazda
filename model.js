@@ -71,6 +71,8 @@
       <p class="eyebrow">${esc(current.車型分類)}${current.產地 ? `｜${esc(current.產地)}` : ""}</p>
       <h1 class="mp-name">${esc(current.名稱)}</h1>
       ${filled(intro.一句話) ? `<p class="mp-tagline">${esc(intro.一句話)}</p>` : ""}
+      ${(current.安全評等 || []).length ? `<ul class="badges">${current.安全評等.map((r) =>
+        `<li title="${esc(r.說明 || "")}">🛡️ ${esc(r.名稱)}</li>`).join("")}</ul>` : ""}
       <p class="mp-price"><span>建議售價</span>${priceRange(ts)}<small>共 ${ts.length} 個版本</small></p>
       ${A.colorViewer(heroTrim)}
     </header>`);
@@ -105,6 +107,7 @@
     $("model-cta-lead").textContent = `想親自坐坐看 ${current.名稱}？`;
     const p = A.RULES["計算參數"];
     $("model-foot").textContent = `價格為台灣馬自達公告之建議售價。規格、配備以台灣官方型錄為準；車輛圖片來源：台灣馬自達官網。` +
+      ((current.安全評等 || []).length ? "安全評等為海外第三方測試成績，海外車型配備可能和台灣版不同。" : "") +
       `標示 * 的${A.RULES["結果頁文字"].海外數據註記}。油錢以每年 ${A.fmt(p.每年行駛公里)} 公里、油價每公升 ${p.油價每公升} 元估算。` +
       `本網站由 ${window.SITE.顧問職稱}個人製作，非台灣馬自達官方網站。`;
     for (const b of $("model-body").querySelectorAll("[data-compare]")) {

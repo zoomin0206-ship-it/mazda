@@ -281,6 +281,8 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .mp-hero { padding: 6px 0 10px; }
 .mp-name { margin: 0; font-size: 34px; line-height: 1.15; }
 .mp-tagline { margin: 6px 0 0; font-size: 17px; font-weight: 700; }
+.badges { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; }
+.badges li { font-size: 12px; font-weight: 700; color: var(--ink); background: #eef2f6; border: 1px solid #d8e0e8; border-radius: 99px; padding: 3px 10px; }
 .mp-price { margin: 10px 0 4px; font-size: 20px; font-weight: 700; }
 .mp-price span { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
 .mp-price small { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--muted); }
