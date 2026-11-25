@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="士倫車">
+  <g stroke="#2b2f36" stroke-width="3.4" stroke-linecap="round"><line x1="31" y1="31" x2="69" y2="31"/><line x1="31" y1="71" x2="69" y2="71"/></g>
+  <rect x="17" y="16.5" width="14" height="29" rx="3.5" fill="#2f4a63" transform="rotate(12 24.0 31)"/>
+  <rect x="69" y="16.5" width="14" height="29" rx="3.5" fill="#2f4a63" transform="rotate(12 76.0 31)"/>
+  <rect x="17" y="56.5" width="14" height="29" rx="3.5" fill="#2f4a63"/>
+  <rect x="69" y="56.5" width="14" height="29" rx="3.5" fill="#2f4a63"/>
+  <path d="M41 8h18l-3 11H44z" fill="#8e1b2c"/>
+  <path d="M43.5 21h13l7.5 57L50 93 36 78z" fill="#8e1b2c"/>
+</svg>
