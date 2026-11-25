@@ -188,6 +188,7 @@
       `每年養車成本以每年 ${fmt(p.每年行駛公里)} 公里、油價每公升 ${p.油價每公升} 元估算。` +
       `本網站由 ${S.顧問職稱}個人製作，非台灣馬自達官方網站。`;
     window._last = results;
+    preloadColors(results.map((r) => r.t));
     $("compare-these").hidden = results.length < 2;
     show("result");
   }
@@ -236,8 +237,7 @@
     return `
       <article class="card${i === 0 ? " top" : ""}">
         <p class="badge">${badge}</p>
-        ${t.圖片 ? `<img class="car-img" src="${esc(t.圖片)}" alt="${esc(t.車款)}" loading="lazy">` : ""}
-        ${t.圖片註記 ? `<p class="img-note">${esc(t.圖片註記)}</p>` : ""}
+        ${colorViewer(t)}
         <h3 class="car">${esc(t.車款)}</h3>
         <p class="trim">${esc(t.名稱)}<span class="type">${esc(typeLabel(t))}</span></p>
         <p class="price"><span>建議售價</span>${wan(t.建議售價)}元</p>
@@ -255,6 +255,41 @@
         ${i > 0 && firstR ? `<p class="versus"><b>和第一推薦（${esc(firstR.t.車款)} ${esc(firstR.t.名稱)}）比：</b>${esc(versusFirst(t, firstR.t))}</p>` : ""}
         ${r.可升級 ? upgradeText(r) : ""}
       </article>`;
+  }
+
+  // ---------- 車色 ----------
+  // 客戶選的車色：{ 版本id: 代號 }，比較頁和 LINE 訊息都會用到
+  const chosenColor = {};
+  function colorOf(t) {
+    const cols = t.車色 || [];
+    return cols.find((c) => c.代號 === (chosenColor[t.id] || t.預設車色)) || cols[0] || null;
+  }
+  function colorViewer(t) {
+    const cols = t.車色 || [];
+    if (!cols.length) return t.圖片 ? `<img class="car-img" src="${esc(t.圖片)}" alt="${esc(t.車款)}" loading="lazy">` : "";
+    const cur = colorOf(t);
+    return `<div class="color-viewer" data-trim="${esc(t.id)}">
+      <img class="car-img big" src="${esc(cur.圖片)}" alt="${esc(t.車款)} ${esc(cur.名稱)}">
+      <div class="swatches" role="radiogroup" aria-label="選擇車色">${cols.map((c) =>
+        `<button type="button" class="swatch${c === cur ? " on" : ""}" role="radio" aria-checked="${c === cur}" data-code="${esc(c.代號)}"
+          aria-label="${esc(c.名稱)}" style="--c:${esc(c.色碼 || "#ccc")}"></button>`).join("")}</div>
+      <p class="color-name">${esc(cur.名稱)}${cur.備註 ? `<span>${esc(cur.備註)}</span>` : ""}</p>
+    </div>`;
+  }
+  function onSwatch(e) {
+    const b = e.target.closest(".swatch");
+    if (!b) return;
+    const box = b.closest(".color-viewer");
+    const t = (window._last || []).map((r) => r.t).find((x) => x.id === box.dataset.trim);
+    if (!t) return;
+    chosenColor[t.id] = b.dataset.code;
+    const tmp = document.createElement("div");
+    tmp.innerHTML = colorViewer(t);
+    box.replaceWith(tmp.firstElementChild);
+  }
+  // 先載入所有車色圖片，切換時不會閃一下
+  function preloadColors(ts) {
+    for (const t of ts) for (const c of t.車色 || []) { const i = new Image(); i.src = c.圖片; }
   }
 
   function upgradeText(r) {
@@ -281,7 +316,10 @@
   // ---------- LINE ----------
   function summary() {
     const lines = ["你好，我用了選車小幫手，結果是："];
-    window._last.forEach((r, i) => lines.push(`${i + 1}. ${r.t.車款} ${r.t.名稱}`));
+    window._last.forEach((r, i) => {
+      const c = colorOf(r.t);
+      lines.push(`${i + 1}. ${r.t.車款} ${r.t.名稱}${c ? `（${c.名稱}）` : ""}`);
+    });
     lines.push("", "我的情況：");
     for (const q of flow()) {
       const a = answers[q.id];
@@ -326,7 +364,7 @@
 
   // QR Code 用的精簡版訊息（太長的話 QR Code 會太密、不好掃）
   function shortSummary() {
-    const cars = window._last.map((r) => `${r.t.車款} ${r.t.名稱}`).join("／");
+    const cars = window._last.map((r) => { const c = colorOf(r.t); return `${r.t.車款} ${r.t.名稱}${c ? `（${c.名稱}）` : ""}`; }).join("／");
     return `選車小幫手推薦：${cars}，想預約賞車`;
   }
 
@@ -364,7 +402,7 @@
   }
 
   // 給「我要比較」等其他模組使用
-  window.App = { show, toast, sendLineText, fname, typeLabel, fmt, wan, esc, DATA: null, RULES: null };
+  window.App = { show, toast, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, DATA: null, RULES: null };
 
   // ---------- 綁定 ----------
   $("go-quiz").addEventListener("click", startQuiz);
@@ -372,6 +410,7 @@
   $("back").addEventListener("click", back);
   $("restart").addEventListener("click", () => show("home"));
   $("send-line").addEventListener("click", sendLine);
+  $("cards").addEventListener("click", onSwatch);
   $("compare-these").addEventListener("click", () => window.Compare.open(window._last.map((r) => r.t.id)));
   $("qr-close").addEventListener("click", () => ($("qr-modal").hidden = true));
   $("qr-modal").addEventListener("click", (e) => { if (e.target.id === "qr-modal") $("qr-modal").hidden = true; });

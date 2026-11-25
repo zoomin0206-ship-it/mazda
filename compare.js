@@ -24,8 +24,11 @@
   const trimById = (id) => TRIMS.find((t) => t.id === id);
   const trimsOf = (carId) => TRIMS.filter((t) => t.車款id === carId);
   const carById = (id) => CARS.find((c) => c.id === id);
-  const img = (t, cls) => t && t.圖片 ? `<img class="${cls}" src="${A.esc(t.圖片)}" alt="${A.esc(t.車款)}" loading="lazy">` +
-    (t.圖片註記 ? `<span class="img-note">${A.esc(t.圖片註記)}</span>` : "") : "";
+  const img = (t, cls) => {
+    const c = A.colorOf(t);                       // 結果頁選過的顏色；沒選過就是預設色
+    const src = c ? c.圖片 : t.圖片;
+    return src ? `<img class="${cls}" src="${A.esc(src)}" alt="${A.esc(t.車款)}" loading="lazy">` : "";
+  };
 
   // ---------- 開啟 ----------
   function open(ids) {
@@ -275,7 +278,7 @@
         parts.push(`${name(t)} 是${carType(t.車身類型)}${desc(t.車身類型)}，${name(base)} 是${carType(base.車身類型)}${desc(base.車身類型)}。`);
       }
       const diff = t.建議售價 - base.建議售價;
-      const who = parts.length ? "價格上，前者" : `${name(t)} 比 ${name(base)}`;
+      const who = parts.length ? "價格上，前者" : `${name(t)} 比 ${name(base)} `;
       parts.push(diff ? `${who}貴 <b>${A.wan(diff)}元</b>。` : `${parts.length ? "兩台" : `${name(t)} 和 ${name(base)} `}建議售價一樣。`);
       const gain = [], lose = [];
       if (t.驅動 !== base.驅動 && t.驅動.includes("四輪")) gain.push("四輪驅動");
@@ -313,7 +316,8 @@
 
   // ---------- LINE ----------
   function sendLine() {
-    const list = current.map((t, i) => `${i + 1}. ${t.車款} ${t.名稱}`).join("\n");
+    const col = (t) => { const c = A.colorOf(t); return c ? `（${c.名稱}）` : ""; };
+    const list = current.map((t, i) => `${i + 1}. ${t.車款} ${t.名稱}${col(t)}`).join("\n");
     const full = `你好，我用選車小幫手比較了：\n${list}\n\n${current.length === 2 ? "兩台" : "這幾台"}都想實際試試看，想約時間試乘比較。`;
     const short = `選車小幫手比較：${current.map((t) => `${t.車款} ${t.名稱}`).join("／")}，想約試乘比較`;
     A.sendLineText(full, short);

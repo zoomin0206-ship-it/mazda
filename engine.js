@@ -10,6 +10,13 @@
     return q.選項.find((o) => o.id === oid);
   }
 
+  // 版本的圖片：有車色就用預設車色那張，沒有就用車款的圖片
+  function defaultImage(car, t) {
+    const cols = t["車色"] || [];
+    const c = cols.find((x) => x.代號 === car["預設車色"]) || cols[0];
+    return c ? c.圖片 : (t["圖片"] || car["圖片"]);
+  }
+
   function loadTrims(DATA, RULES) {
     const tax = DATA["稅金級距"];
     const p = RULES["計算參數"];
@@ -18,8 +25,8 @@
       if (car.上架 === false) continue;
       const common = car["版本共同規格"] || {};
       for (const t of car["版本"]) {
-        const v = Object.assign({}, common, t, { 車款: car["名稱"], 車款id: car.id, 車型分類: car["車型分類"], 圖片: t["圖片"] || car["圖片"],
-          圖片註記: !t["圖片"] && car["圖片車身"] && car["圖片車身"] !== t["車身類型"] ? `圖為${car["圖片車身"]}車款` : "" });
+        const v = Object.assign({}, common, t, { 車款: car["名稱"], 車款id: car.id, 車型分類: car["車型分類"], 圖片: defaultImage(car, t), 圖片註記: "",
+          預設車色: car["預設車色"] });
         v.每年稅金 = tax[v.稅金級距].合計;
         v.每年油錢 = Math.round((p.每年行駛公里 / v.油耗kmL) * p.油價每公升);
         v.每年養車成本 = v.每年稅金 + v.每年油錢;

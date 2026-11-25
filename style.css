@@ -254,6 +254,20 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .best-mark { font-size: 11px; background: #eef5f1; border-radius: 99px; padding: 1px 6px; font-weight: 700; }
 #compare-view .cta { margin-top: 24px; }
 .img-note { display: block; margin: -4px 0 4px; font-size: 11px; color: var(--muted); }
+.color-viewer { margin: 4px 0 8px; }
+.card .car-img.big { max-width: 100%; height: auto; aspect-ratio: 900 / 460; object-fit: contain; object-position: center; margin: 0 auto 6px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.swatch {
+  position: relative; width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0;
+  background: var(--c); box-shadow: inset 0 0 0 1px rgba(0,0,0,.15), 0 0 0 3px #fff, 0 0 0 4px #ddd;
+}
+.swatch.on { box-shadow: inset 0 0 0 1px rgba(0,0,0,.15), 0 0 0 3px #fff, 0 0 0 5px var(--ink); }
+.swatch.on::after {
+  content: ""; position: absolute; left: 12px; top: 8px; width: 7px; height: 13px;
+  border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); filter: drop-shadow(0 0 1px rgba(0,0,0,.6));
+}
+.color-name { text-align: center; margin: 10px 0 0; font-size: 14px; font-weight: 700; }
+.color-name span { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
 .card .car-img { display: block; width: 100%; max-width: 320px; height: 80px; object-fit: contain; object-position: left center; margin: 4px 0 6px; }
 
 /* QR Code 視窗（電腦版） */
