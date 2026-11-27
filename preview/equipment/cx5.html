@@ -41,7 +41,7 @@ details.line>summary::-webkit-details-marker{display:none}details.line>summary::
 <header><div class="brand">士倫車｜Mazda 選車指南</div><h1>CX-5 完整配備說明書</h1>
 <p class="lead">照「用車的一天」整理，買了這台車會有什麼，一次看懂。</p></header>
 <div class="sample">⚠️ 這是樣品頁，還沒有正式上線</div>
-<div class="bar"><div class="lbl">選版本（官方建議售價）</div><div class="chips" id="trims"></div>
+<div id="anchor"></div><div class="bar"><div class="lbl">選版本（官方建議售價）</div><div class="chips" id="trims"></div>
 <div class="lbl" style="margin-top:6px">分類</div><div class="chips" id="nav"></div></div>
 <main id="main"></main><nav class="pager" id="pager"></nav>
 <div class="cta"><b>配備看懂了，實車坐坐看最準</b><br><a id="line" href="#">加 LINE 預約賞車試乘</a></div>
@@ -98,8 +98,8 @@ function render(scrollTop){
   const prev=tab>0?`<button class="prev" onclick="goTab(${tab-1})">← ${esc(tabs[tab-1])}</button>`:"";
   const next=tab<sc.length?`<button class="next" onclick="goTab(${tab+1})">${tab===0?"開始看配備：":"下一段："}${esc(tabs[tab+1])} →</button>`:`<button class="end" onclick="location.href=document.getElementById('line').href">看完了，加 LINE 預約賞車試乘</button>`;
   P.innerHTML=prev+next;
-  const cur=document.querySelector("#nav .chip.here");if(cur)cur.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"});
-  if(scrollTop){const bar=document.querySelector(".bar");const y=bar.getBoundingClientRect().top+scrollY;if(scrollY>y)scrollTo({top:y,behavior:"instant"})}
+  const cur=document.querySelector("#nav .chip.here");if(cur){const n=document.getElementById("nav");n.scrollTo({left:cur.offsetLeft-n.clientWidth/2+cur.offsetWidth/2,behavior:"smooth"})}
+  if(scrollTop){const y=document.getElementById("anchor").getBoundingClientRect().top+scrollY;if(scrollY>y)scrollTo({top:y,behavior:"instant"})}
 }
 function goTab(k){tab=k;render(true)}
 // 左右滑動換頁（附加功能）：水平距離夠長、而且明顯比垂直距離大才算
