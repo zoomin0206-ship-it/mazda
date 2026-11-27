@@ -217,7 +217,7 @@
         <button type="button" class="cmp-more" data-model="${A.esc(t.車款id)}">看這台車 →</button></div>`).join("") +
       (canAdd ? `<button type="button" class="cmp-add" id="cmp-add"><b>＋</b><span>加一台</span></button>` : "");
     for (const b of $("cmp-head").querySelectorAll(".cmp-more")) b.addEventListener("click", () => window.Model.open(b.dataset.model));
-    $("cmp-summary").innerHTML = summary().map((p) => `<p>${p}</p>`).join("");
+    $("cmp-summary").innerHTML = summary();
 
     const same = sameModelRows();
     const sections = [];
@@ -272,24 +272,27 @@
   }
 
   // ---------- 一句話結論 ----------
+  // 比較重點：一台一列分開寫，價格、多了什麼、空間、動力、養車費各一行，好掃讀
   function summary() {
     const sorted = [...current].sort((a, b) => a.建議售價 - b.建議售價);
     const base = sorted[0];
-    const name = (t) => `<b>${A.esc(t.車款)} ${A.esc(t.名稱)}</b>`;
-    const out = [];
+    const sameCar = current.every((t) => t.車款 === base.車款);
+    const nm = (t) => A.esc(sameCar ? t.名稱 : t.車款);
+    const full = (t) => `${A.esc(t.車款)} ${A.esc(t.名稱)}`;
     const mechH = A.RULES["機械車位"].不知道時採用的高度;
+    const desc = (type) => {
+      const o = A.RULES["題目"].find((q) => q.id === "body").選項.find((x) => x.車身類型 === type);
+      return o ? o.文字.split("：")[1] : "";
+    };
+    const chips = (arr) => `<span class="cs-chips">${arr.map((x) => `<span>${A.esc(x)}</span>`).join("")}</span>`;
+    let html = "";
     for (const t of sorted.slice(1)) {
-      const parts = [];
-      if (t.車身類型 !== base.車身類型) {   // 車型不同是最大的差別，先講
-        const desc = (type) => {
-          const o = A.RULES["題目"].find((q) => q.id === "body").選項.find((x) => x.車身類型 === type);
-          return o ? `（${o.文字.split("：")[1]}）` : "";
-        };
-        parts.push(`${name(t)} 是${carType(t.車身類型)}${desc(t.車身類型)}，${name(base)} 是${carType(base.車身類型)}${desc(base.車身類型)}。`);
+      const rows = [];
+      if (t.車身類型 !== base.車身類型) {
+        rows.push(["車型", `<b>${nm(t)}</b> 是${carType(t.車身類型)}：${A.esc(desc(t.車身類型))}<br><b>${nm(base)}</b> 是${carType(base.車身類型)}：${A.esc(desc(base.車身類型))}`]);
       }
       const diff = t.建議售價 - base.建議售價;
-      const who = parts.length ? "價格上，前者" : `${name(t)} 比 ${name(base)} `;
-      parts.push(diff ? `${who}貴 <b>${A.wan(diff)}元</b>。` : `${parts.length ? "兩台" : `${name(t)} 和 ${name(base)} `}建議售價一樣。`);
+      rows.push(["價格", diff ? `<b>${nm(t)}</b> 貴 <b class="cs-num">${A.wan(diff)}元</b>` : "建議售價一樣"]);
       const gain = [], lose = [];
       if (t.驅動 !== base.驅動 && t.驅動.includes("四輪")) gain.push("四輪驅動");
       const has = (v) => v === true || (typeof v === "string" && v !== "");
@@ -302,26 +305,27 @@
           if (a.includes(it.亮點關鍵字) && !b.includes(it.亮點關鍵字)) lose.push(it.亮點名稱);
         }
       }
-      const list = (arr) => arr.slice(0, 6).join("、") + (arr.length > 6 ? ` 等 ${arr.length} 項` : "");
-      if (gain.length) parts.push(`多了：${list(gain)}。`);
-      if (lose.length) parts.push(`但少了：${list(lose)}。`);
+      if (gain.length) rows.push([`${nm(t)} 多了`, chips(gain)]);
+      if (lose.length) rows.push([`${nm(t)} 少了`, chips(lose)]);
+      const vs = (x, y, u) => `<b>${nm(t)}</b> ${x}${u}　vs　<b>${nm(base)}</b> ${y}${u}`;
       const dl = Math.round((t.全長 - base.全長) / 10);
-      if (Math.abs(dl) >= 10) parts.push(`車身${dl > 0 ? "長" : "短"} ${Math.abs(dl)} 公分。`);
+      if (Math.abs(dl) >= 10) rows.push(["車身長度", vs(A.fmt(t.全長), A.fmt(base.全長), " mm") + `（${dl > 0 ? "長" : "短"} ${Math.abs(dl)} 公分）`]);
       if (t.行李廂L && base.行李廂L && Math.abs(t.行李廂L - base.行李廂L) >= 30) {
-        parts.push(`後車廂${t.行李廂L > base.行李廂L ? "大" : "小"} ${Math.abs(t.行李廂L - base.行李廂L)} L${overseas(t) || overseas(base) ? "*" : ""}。`);
+        const star = overseas(t) || overseas(base) ? "*" : "";
+        rows.push(["後車廂", vs(t.行李廂L, base.行李廂L, " L" + star)]);
       }
-      if (t.座位數 !== base.座位數) parts.push(`座位 ${t.座位數} 人（${base.座位數} 人）。`);
-      if (Math.abs(t.馬力ps - base.馬力ps) / base.馬力ps >= 0.1) parts.push(`馬力 ${t.馬力ps} ps（${base.馬力ps} ps）。`);
+      if (t.座位數 !== base.座位數) rows.push(["座位", vs(t.座位數, base.座位數, " 人")]);
+      if (Math.abs(t.馬力ps - base.馬力ps) / base.馬力ps >= 0.1) rows.push(["馬力", vs(t.馬力ps, base.馬力ps, " ps")]);
       const dc = t.每年養車成本 - base.每年養車成本;
-      if (Math.abs(dc) >= 3000) parts.push(`每年稅金＋油錢${dc > 0 ? "多" : "少"}約 ${A.fmt(Math.round(Math.abs(dc) / 1000) * 1000)} 元。`);
-      out.push(parts.join(""));
+      if (Math.abs(dc) >= 3000) rows.push(["每年稅金＋油錢", `<b>${nm(t)}</b> ${dc > 0 ? "多" : "少"}約 <b class="cs-num">${A.fmt(Math.round(Math.abs(dc) / 1000) * 1000)} 元</b>`]);
+      html += `<div class="cs">${sorted.length > 2 ? `<p class="cs-title">${full(t)} vs ${full(base)}</p>` : ""}<dl>${rows.map(([k, v]) => `<div><dt>${A.esc(k)}</dt><dd>${v}</dd></div>`).join("")}</dl></div>`;
     }
     for (const t of current) {
       if (t.全高 > mechH && current.some((x) => x.全高 <= mechH)) {
-        out.push(`提醒：${name(t)} 車高 ${A.fmt(t.全高)} mm，停不進最常見限高 ${A.fmt(mechH)} mm 的機械車位。`);
+        html += `<p class="cs-warn">⚠️ <b>機械車位</b>：${full(t)} 車高 ${A.fmt(t.全高)} mm，停不進最常見限高 ${A.fmt(mechH)} mm 的機械車位。</p>`;
       }
     }
-    return out;
+    return html;
   }
 
   // ---------- LINE ----------

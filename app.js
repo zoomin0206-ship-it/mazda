@@ -242,19 +242,19 @@
     return o ? o.文字.split("：")[1] : "";
   };
 
+  // 和第一推薦比：一行一個重點
   function versusFirst(t, first) {
-    const parts = [];
+    const rows = [];
     const d = t.建議售價 - first.建議售價;
-    if (d) parts.push(`${d < 0 ? "便宜" : "貴"} ${wan(Math.abs(d))}元`);
-    if (t.車身類型 !== first.車身類型) parts.push(`是${carType(t.車身類型)}（${bodyDesc(t.車身類型)}）`);
+    if (d) rows.push(["價格", `${d < 0 ? "便宜" : "貴"} ${wan(Math.abs(d))}元`]);
+    if (t.車身類型 !== first.車身類型) rows.push(["車型", `${carType(t.車身類型)}（${bodyDesc(t.車身類型)}）`]);
     if (t.行李廂L && first.行李廂L && Math.abs(t.行李廂L - first.行李廂L) >= 30) {
-      parts.push(`後車廂${t.行李廂L > first.行李廂L ? "大" : "小"} ${Math.abs(t.行李廂L - first.行李廂L)} L`);
+      rows.push(["後車廂", `${t.行李廂L > first.行李廂L ? "大" : "小"} ${Math.abs(t.行李廂L - first.行李廂L)} L`]);
     }
     const more = gains(first, t), less = gains(t, first);
-    let s = parts.join("、");
-    if (more.length) s += `${s ? "；" : ""}多了：${listText(more, 3)}`;
-    if (less.length) s += `${s ? "；" : ""}少了：${listText(less, 3)}`;
-    return s;
+    if (more.length) rows.push(["多了", listText(more, 4)]);
+    if (less.length) rows.push(["少了", listText(less, 4)]);
+    return rows;
   }
 
   function card(r, i, n, firstR) {
@@ -282,7 +282,7 @@
           <div><dt>驅動</dt><dd>${t.驅動.includes("四輪") ? "四輪驅動" : t.驅動.includes("後輪") ? "後輪驅動" : "前輪驅動"}</dd></div>
           <div><dt>每年養車約</dt><dd>${wan(Math.round(t.每年養車成本 / 1000) * 1000)}</dd></div>
         </dl>
-        ${i > 0 && firstR ? `<p class="versus"><b>和第一推薦（${esc(firstR.t.車款)} ${esc(firstR.t.名稱)}）比：</b>${esc(versusFirst(t, firstR.t))}</p>` : ""}
+        ${i > 0 && firstR ? `<div class="versus"><b>和第一推薦（${esc(firstR.t.車款)} ${esc(firstR.t.名稱)}）比</b><dl>${versusFirst(t, firstR.t).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></div>` : ""}
         ${r.可升級 ? upgradeText(r) : ""}
         <button type="button" class="more-link" data-model="${esc(t.車款id)}">看 ${esc(t.車款)} 完整介紹 →</button>
       </article>`;
@@ -327,8 +327,8 @@
 
   function upgradeText(r) {
     const up = r.可升級, g = gains(r.t, up);
-    return `<p class="upgrade">預算內可以升級：多 ${wan(up.建議售價 - r.t.建議售價)}元選 <b>${esc(up.名稱)}</b>，` +
-      (g.length ? `多了：${esc(listText(g, 5))}` : "主要差在外觀細節") + `</p>`;
+    return `<div class="upgrade"><p>預算內可以升級：多 <b>${wan(up.建議售價 - r.t.建議售價)}元</b>選 <b>${esc(up.名稱)}</b></p>` +
+      (g.length ? `<p class="upgrade-g">多了：${esc(listText(g, 5))}</p>` : `<p class="upgrade-g">主要差在外觀細節</p>`) + `</div>`;
   }
 
   function heightCap() {

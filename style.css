@@ -449,3 +449,30 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .brandbar { display: flex; justify-content: space-between; align-items: center; margin: -8px 0 14px; font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none; }
 .brandbar span { font-size: 12px; font-weight: 400; color: var(--muted); }
 .brandbar[hidden] { display: none; }
+
+/* 比較重點：一行一個重點 */
+.cs dl { margin: 0; }
+.cs dl > div { display: grid; grid-template-columns: 92px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.cs dl > div:first-child { border-top: 0; padding-top: 0; }
+.cs dt { font-size: 13px; color: var(--muted); padding-top: 2px; }
+.cs dd { margin: 0; font-size: 15px; line-height: 1.6; }
+.cs-title { margin: 0 0 8px; font-weight: 700; }
+.cs + .cs { margin-top: 14px; padding-top: 14px; border-top: 2px solid var(--line); }
+.cs-num { color: var(--accent); }
+.cs-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cs-chips span { font-size: 13px; background: var(--accent-soft); color: var(--accent); border-radius: 99px; padding: 2px 10px; }
+.cs-warn { margin: 12px 0 0; padding: 10px 12px; background: var(--warn-bg, #fff6e0); border-radius: 10px; font-size: 14px; }
+
+.versus dl { margin: 6px 0 0; }
+.versus dl > div { display: grid; grid-template-columns: 56px 1fr; gap: 8px; padding: 3px 0; }
+.versus dt { color: var(--muted); }
+.versus dd { margin: 0; }
+.upgrade p { margin: 0; }
+.upgrade .upgrade-g { margin-top: 4px; font-size: 13px; color: var(--muted); }
+.pz-lead { margin: 0 0 6px; font-weight: 600; }
+.pz { margin: 0; padding-left: 18px; }
+.pz li { margin: 4px 0; }
+.ld-why .pz-lead, .ld-why > p { margin-top: 4px; }
+.pz-lead.long { font-weight: 400; }
+.faq-a { margin-top: 8px; font-size: 14px; }
+.faq-a p { margin: 0 0 6px; }

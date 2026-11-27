@@ -34,6 +34,15 @@
     return (lo === hi ? A.fmt(lo) : `${A.fmt(lo)}～${A.fmt(hi)}`) + unit;
   };
   const filled = (x) => Array.isArray(x) ? x.length > 0 : !!x;
+  // 長段落排版：第一句當重點，其他句子條列（內容不刪減）；短的就維持一段
+  const prose = (txt) => {
+    // 「四個重點：一、…；二、…」這種列舉，拆成一項一項
+    const t = String(txt).replace(/：(?=一、)/, "：\n").replace(/；(?=[二三四五六七八九]、)/g, "\n").replace(/。(?=[二三四五六七八九]、)/g, "。\n");
+    const ss = t.split(/(?<=[。；！？])|\n/).map((x) => x.trim()).filter(Boolean);
+    if (ss.length < 3) return `<p>${esc(txt)}</p>`;
+    const lead = ss.shift().replace(/[。：]$/, "");
+    return `<p class="pz-lead${lead.length > 40 ? " long" : ""}">${esc(lead)}</p><ul class="pz">${ss.map((x) => `<li>${esc(x.replace(/[。；]$/, ""))}</li>`).join("")}</ul>`;
+  };
 
   // ---------- 車款列表 ----------
   function openList(opts = {}) {
@@ -93,7 +102,7 @@
     const faq = (intro.常見問題 || []).filter((q) => q.問 && q.答);
     if (faq.length) {
       view.push(section("展間最常被問的問題", "faq", faq.map((q) =>
-        `<details class="faq"><summary>${esc(q.問)}</summary><p>${esc(q.答)}</p></details>`).join(""), true));
+        `<details class="faq"><summary>${esc(q.問)}</summary><div class="faq-a">${prose(q.答)}</div></details>`).join(""), true));
     }
     // 6 台灣生活實用資訊
     sections.push(section("台灣生活實用資訊", "life", lifeInfo(ts)));
@@ -161,7 +170,7 @@
         return `<li class="ld${isRec ? " rec" : ""}">
           <div class="ld-head"><b>${esc(t.名稱)}</b><span>${wan(t.建議售價)}元</span>${isRec ? `<em>士倫推薦</em>` : ""}</div>
           ${detail}
-          ${isRec && filled(intro.推薦理由) && t.id === recs.find((id) => list.some((x) => x.id === id)) ? `<p class="ld-why"><b>為什麼推薦：</b>${esc(intro.推薦理由)}</p>` : ""}
+          ${isRec && filled(intro.推薦理由) && t.id === recs.find((id) => list.some((x) => x.id === id)) ? `<div class="ld-why"><b>為什麼推薦</b>${prose(intro.推薦理由)}</div>` : ""}
         </li>`;
       }).join("") + `</ol>`;
     }
