@@ -21,7 +21,7 @@ h2{font-size:22px;margin:2px 18px 4px}.hook{margin:0 18px 6px;color:var(--muted)
 .sec{font-size:12px;color:#999;margin:12px 18px 4px}
 .card{background:#fff;margin:10px 14px;border-radius:14px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 .t{font-size:17px;font-weight:700;line-height:1.45}.tag{display:inline-block;font-size:11px;color:var(--navy);background:#e8eef4;border-radius:8px;padding:1px 8px;margin-top:5px}
-.d{font-size:15px;margin:8px 0;color:#444}
+.d{font-size:15px;margin:8px 0;color:#444}.lead2{margin:0 0 6px;font-weight:600;color:var(--ink)}.lead2.long{font-weight:400}.pts{margin:0;padding-left:18px}.pts>li{margin:3px 0}.sub{margin:4px 0;padding-left:20px}.sub li{margin:2px 0}.v{color:var(--red);font-weight:600}.d b{color:var(--ink)}
 .ver{font-size:13px;color:var(--red);border-top:1px solid #f0ebe4;padding-top:8px;margin-top:6px}
 .ver small{display:block;color:var(--muted)}
 details.more{margin-top:6px;font-size:13px;color:var(--muted)}details.more summary{cursor:pointer;color:var(--navy)}
@@ -55,7 +55,20 @@ function ver(it){
   const diff=it.細節.filter(d=>(it.細節.length>1&&d.版本.length!==it.版本.length)||Object.keys(d.附註).length);
   return `<div class="ver">${esc(vname(it.版本))}${diff.length?`<details class="more"><summary>各版本差異</summary><ul>${diff.map(d=>`<li>${esc(d.名稱)}：${esc(vname(d.版本))}${Object.keys(d.附註).length?"（"+Object.entries(d.附註).map(([i,n])=>D.版本[i]+" "+n).join("；")+"）":""}${d.選配?"（選配）":""}</li>`).join("")}</ul></details>`:""}</div>`}
 function act(it){return it.作動.length?`<details class="more"><summary>作動條件</summary><ul>${it.作動.map(a=>`<li>${esc(a.功能)}：${esc(a.條件)}</li>`).join("")}</ul></details>`:""}
-function body(it){return `${it.標籤?`<span class="tag">${esc(it.標籤)}</span>`:""}<p class="d">${esc(it.說明)}</p>${ver(it)}${act(it)}`}
+// 說明文字排版：第一句當重點，其他句子變成條列；①②③ 拆成小清單；版本名稱、數字加強顯示（內容不刪減）
+function hl(t){return esc(t).replace(/(Premium Plus|Premium|Exclusive|Elite|全車型)( 起)?/g,'<span class="v">$1$2</span>').replace(/(\d+(?:\.\d+)?(?:～\d+)?\s*(?:吋|顆|段|公里|km\/h|喇叭|分鐘|L))/g,'<b>$1</b>')}
+function fmt(txt){
+  const ss=txt.split(/(?<=[。；])/).map(x=>x.trim().replace(/；$/,'。')).filter(Boolean);
+  const lead=ss.shift()||"";
+  const li=ss.map(x=>{
+    const parts=x.split(/(?=[①②③④⑤⑥])/);
+    if(parts.length>1){const head=parts.shift();return `<li>${hl(head.replace(/[：:]$/,""))}<ol class="sub">${parts.map(p=>`<li>${hl(p.replace(/^[①②③④⑤⑥]/,"").replace(/[；;。]$/,""))}</li>`).join("")}</ol></li>`}
+    return `<li>${hl(x.replace(/。$/,""))}</li>`});
+  const lp=lead.split(/(?=[①②③④⑤⑥])/);
+  const h0=lp.shift();let L=`<p class="lead2${h0.length>42?" long":""}">${hl(h0.replace(/[：:]$/,"").replace(/。$/,""))}</p>`;
+  if(lp.length)L+=`<ol class="sub">${lp.map(p=>`<li>${hl(p.replace(/^[①②③④⑤⑥]/,"").replace(/[；;。]$/,""))}</li>`).join("")}</ol>`;
+  return L+(li.length?`<ul class="pts">${li.join("")}</ul>`:"")}
+function body(it){return `${it.標籤?`<span class="tag">${esc(it.標籤)}</span>`:""}<div class="d">${fmt(it.說明)}</div>${ver(it)}${act(it)}`}
 function render(){
   const S=document.getElementById("sum");
   if(sel<0){S.innerHTML=`<p class="hook" style="margin-top:12px">點上方的版本，看這個版本的價格和多了什麼配備。</p>`}
