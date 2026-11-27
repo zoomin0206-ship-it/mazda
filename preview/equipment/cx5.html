@@ -13,6 +13,7 @@ h1{font-size:26px;margin:4px 0 6px}.lead{color:var(--muted);font-size:15px;margi
 .chips{display:flex;gap:8px;overflow-x:auto;padding:0 18px 4px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
 .chip{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:14px;color:var(--ink);cursor:pointer;white-space:nowrap}
 .chip.on{background:var(--red);border-color:var(--red);color:#fff}
+#nav .chip.here{background:var(--navy);border-color:var(--navy);color:#fff}
 .chip small{display:block;font-size:11px;opacity:.75;line-height:1.2}
 #trims .chip{border-radius:12px;padding:5px 12px;min-height:44px}
 .scene{padding:18px 0 0;scroll-margin-top:110px}.sn{font-size:12px;color:var(--navy);font-weight:700;padding:0 18px}
@@ -73,7 +74,7 @@ function render(){
 }
 // 跳到情境：反白目前所在的那一段
 let lock=0;
-function mark(k){document.querySelectorAll("#nav .chip").forEach(b=>{const on=+b.dataset.k===k;b.classList.toggle("on",on);if(on)b.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"})})}
+function mark(k){document.querySelectorAll("#nav .chip").forEach(b=>{const on=+b.dataset.k===k;b.classList.toggle("here",on);if(on)b.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"})})}
 function go(k){lock=Date.now();mark(k);document.getElementById("s"+k).scrollIntoView({behavior:"smooth"})}
 function spy(){if(Date.now()-lock<800)return;const top=document.querySelector(".bar").getBoundingClientRect().bottom+10;let cur=-1;
   document.querySelectorAll(".scene").forEach((el,k)=>{if(el.getBoundingClientRect().top<=top)cur=k});mark(cur)}
