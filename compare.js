@@ -103,10 +103,12 @@
         <p class="slot-step">① 選車款<span class="swipe-hint">左右滑動</span></p>
         <div class="swipe models">${models}</div>
         ${browseCar ? `<p class="slot-step">② 點版本，加進候選名單${ts.length > 1 ? `<span class="swipe-hint">共 ${ts.length} 個版本，左右滑動</span>` : ""}</p>
-          <div class="swipe trims">${ts.map((t) => trimCard(t, picked.includes(t.id), 0)).join("")}</div>` : `<p class="pick-empty">先點一台車款，再選版本</p>`}
-      </div>`;
+          <div class="swipe trims">${ts.map((t) => trimCard(t, picked.includes(t.id), 0)).join("")}</div>`
+          : `<p class="slot-step">② 選版本</p><div class="pick-hold">點上面的車款，這裡會出現各個版本</div>`}
+      </div>` + popular();
     for (const b of box.querySelectorAll(".model-chip")) b.addEventListener("click", () => { browseCar = b.dataset.car; renderPick(); });
     for (const b of box.querySelectorAll(".trim-card")) b.addEventListener("click", () => toggle(b.dataset.trim));
+    for (const b of box.querySelectorAll("[data-pair]")) b.addEventListener("click", () => view(b.dataset.pair.split(",")));
 
     // 候選名單（固定在畫面下方）
     $("pick-tray").innerHTML = picked.length
@@ -125,6 +127,15 @@
     const n = picked.length;
     $("do-compare").disabled = n < 2;
     $("do-compare").textContent = n < 2 ? `再選 ${2 - n} 台就可以比較` : `開始比較這 ${n} 台 →`;
+  }
+
+  // 常見的比較：一鍵看比較結果（候選名單還是空的時候才顯示）
+  function popular() {
+    if (picked.length) return "";
+    const pairs = (CFG.常見組合 || []).map((p) => p.map(trimById)).filter((p) => p.every(Boolean));
+    if (!pairs.length) return "";
+    return `<div class="popular"><p class="slot-step">或直接看常見的比較</p><div class="popular-list">${pairs.map((p) =>
+      `<button type="button" class="pop-pair" data-pair="${p.map((t) => t.id).join(",")}"><b>${p.map((t) => A.esc(t.車款)).join(" vs ")}</b><span>${p.map((t) => A.esc(t.名稱)).join(" ／ ")}</span></button>`).join("")}</div></div>`;
   }
 
   // 點版本：沒選就加進候選名單，已選就移除；選滿了提醒先移除一台
