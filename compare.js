@@ -7,6 +7,7 @@
   let A, CFG, TRIMS, CARS, ITEMS;
   let picked = [];       // 候選名單：已選的版本 id（依加入順序）
   let browseCar = null;  // 選單上目前在看的車款
+  let browseBody = null; // 目前在看的車身（Mazda3 四門／五門）
   let current = [];      // 比較中的版本
 
   function init() {
@@ -37,6 +38,7 @@
     if (ids.length >= 2) return view(ids);
     picked = ids.slice();
     browseCar = ids.length ? trimById(ids[ids.length - 1]).車款id : null;
+    browseBody = ids.length ? trimById(ids[ids.length - 1]).車身類型 : null;
     renderPick();
     A.show("compare-pick", { url: location.pathname });
   }
@@ -98,15 +100,20 @@
       return `<button type="button" class="model-chip${browseCar === c.id ? " on" : ""}" data-car="${c.id}" aria-pressed="${browseCar === c.id}">
         ${c.圖片 ? `<img src="${A.esc(c.圖片)}" alt="" loading="lazy">` : ""}<b>${A.esc(c.名稱)}</b><span>${A.esc(c.車型分類)}</span>${cnt ? `<em class="mc-cnt">已選 ${cnt}</em>` : ""}</button>`;
     }).join("");
-    const ts = browseCar ? trimsOf(browseCar) : [];
+    const all = browseCar ? trimsOf(browseCar) : [];
+    const bs = A.bodiesOf(all);
+    if (!bs.includes(browseBody)) browseBody = bs[0] || null;
+    const ts = bs.length > 1 ? all.filter((t) => t.車身類型 === browseBody) : all;
     box.innerHTML = `<div class="slot">
         <p class="slot-step">① 選車款<span class="swipe-hint">左右滑動</span></p>
         <div class="swipe models">${models}</div>
         ${browseCar ? `<p class="slot-step">② 點版本，加進候選名單${ts.length > 1 ? `<span class="swipe-hint">共 ${ts.length} 個版本，左右滑動</span>` : ""}</p>
+          ${A.bodySwitch(all, browseBody, "data-body")}
           <div class="swipe trims">${ts.map((t) => trimCard(t, picked.includes(t.id), 0)).join("")}</div>`
           : `<p class="slot-step">② 選版本</p><div class="pick-hold">點上面的車款，這裡會出現各個版本</div>`}
       </div>` + popular();
-    for (const b of box.querySelectorAll(".model-chip")) b.addEventListener("click", () => { browseCar = b.dataset.car; renderPick(); });
+    for (const b of box.querySelectorAll(".model-chip")) b.addEventListener("click", () => { browseCar = b.dataset.car; browseBody = null; renderPick(); });
+    for (const b of box.querySelectorAll("[data-body]")) b.addEventListener("click", () => { browseBody = b.dataset.body; renderPick(); });
     for (const b of box.querySelectorAll(".trim-card")) b.addEventListener("click", () => toggle(b.dataset.trim));
     for (const b of box.querySelectorAll("[data-pair]")) b.addEventListener("click", () => view(b.dataset.pair.split(",")));
 
@@ -353,7 +360,7 @@
   $("do-compare").addEventListener("click", () => view(picked.slice()));
   $("pick-back").addEventListener("click", () => A.goBack(A.goHome));
   $("view-back").addEventListener("click", () => {   // 「換車比較」：回到選車畫面，保留目前選的車
-    picked = current.map((t) => t.id); browseCar = current[current.length - 1].車款id;
+    picked = current.map((t) => t.id); browseCar = current[current.length - 1].車款id; browseBody = current[current.length - 1].車身類型;
     renderPick();
     A.show("compare-pick", { url: location.pathname });
   });

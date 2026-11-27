@@ -6,7 +6,7 @@
   "use strict";
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const cache = {};
-  let D = null, sel = -1, root = null, cur = -2, lock = 0;
+  let D = null, sel = -1, root = null, cur = -2, lock = 0, body = null;
 
   async function load(carId) {
     if (carId in cache) return cache[carId];
@@ -48,7 +48,13 @@
   function draw() {
     const vis = D.items.filter((i) => sel < 0 || i.版本.includes(sel));
     const sc = D.情境.filter((s) => vis.some((i) => i.情境 === s));
-    root.querySelector(".eq-trims").innerHTML = [-1, ...D.版本.keys()].map((i) =>
+    // 有兩種車身（Mazda3）時，先切車身，版本按鈕只顯示那種車身
+    const bset = [...new Set(D.車身 || [])].filter(Boolean).sort((a, b) => ["掀背", "轎車"].indexOf(a) - ["掀背", "轎車"].indexOf(b));
+    if (bset.length > 1 && !bset.includes(body)) body = bset[0];
+    const showIdx = [...D.版本.keys()].filter((i) => bset.length < 2 || D.車身[i] === body);
+    root.querySelector(".eq-body").innerHTML = bset.length > 1 ? window.App.bodySwitch(D.版本.map((_, i) => ({ 車身類型: D.車身[i] })), body, "data-eqbody") : "";
+    for (const b of root.querySelectorAll("[data-eqbody]")) b.addEventListener("click", () => { body = b.dataset.eqbody; if (sel >= 0 && D.車身[sel] !== body) sel = -1; draw(); });
+    root.querySelector(".eq-trims").innerHTML = [-1, ...showIdx].map((i) =>
       `<button type="button" class="eq-chip${i === sel ? " on" : ""}" data-sel="${i}">${i < 0 ? "全部版本" : esc(D.版本[i]) + `<small>${esc(D.售價[i])}</small>`}</button>`).join("");
     root.querySelector(".eq-nav").innerHTML = sc.map((s, k) => `<button type="button" class="eq-chip" data-k="${k}">${esc(s)}</button>`).join("");
     root.querySelector(".eq-main").innerHTML =
@@ -96,8 +102,8 @@
   async function render(container, carId) {
     const data = await load(carId);
     if (!data) return false;
-    D = data; sel = -1; root = container;
-    container.innerHTML = `<div class="eq-bar"><p class="eq-lbl">選版本（官方建議售價）</p><div class="eq-chips eq-trims"></div>
+    D = data; sel = -1; root = container; body = null;
+    container.innerHTML = `<div class="eq-bar"><p class="eq-lbl">選版本（官方建議售價）</p><div class="eq-body"></div><div class="eq-chips eq-trims"></div>
       <p class="eq-lbl">分類</p><div class="eq-chips eq-nav"></div></div><div class="eq-main"></div>`;
     draw();
     return true;

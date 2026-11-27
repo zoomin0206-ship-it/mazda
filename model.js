@@ -124,6 +124,10 @@
     });
     showTab(wantTab === "view" && view.length ? "view" : "ov");
     for (const b of $("model-body").querySelectorAll("[data-go]")) b.addEventListener("click", () => showTab(b.dataset.go, true));
+    for (const b of $("model-body").querySelectorAll("[data-ladder-body]")) b.addEventListener("click", () => {
+      for (const x of $("model-body").querySelectorAll("[data-ladder-body]")) x.classList.toggle("on", x === b);
+      for (const ol of $("model-body").querySelectorAll("[data-ladder]")) ol.hidden = ol.dataset.ladder !== b.dataset.ladderBody;
+    });
     $("model-cta-lead").textContent = `想親自坐坐看 ${current.名稱}？`;
     // 下一步：常被拿來比較的車（三個分頁最下面共用）
     $("model-rivals").innerHTML = rivals(heroTrim);
@@ -152,12 +156,12 @@
   // 版本階梯：多花多少、多了什麼（同車身才比）
   function ladder(ts, intro) {
     const recs = [].concat(intro.推薦版本 || []);
-    const bodies = [...new Set(ts.map((t) => t.車身類型))];
-    let html = "";
+    const bodies = A.bodiesOf(ts);
+    // 同一車款有不同車身（Mazda3）：用切換按鈕，一次只看一種車身
+    let html = bodies.length > 1 ? A.bodySwitch(ts, bodies[0], "data-ladder-body") : "";
     for (const body of bodies) {
       const list = ts.filter((t) => t.車身類型 === body).sort((a, b) => a.建議售價 - b.建議售價);
-      if (bodies.length > 1) html += `<h3 class="ladder-body">${esc(A.typeLabel(list[0]))}</h3>`;
-      html += `<ol class="ladder">` + list.map((t, i) => {
+      html += `<ol class="ladder" data-ladder="${esc(body)}"${body !== bodies[0] ? " hidden" : ""}>` + list.map((t, i) => {
         const prev = list[i - 1];
         let detail;
         if (!prev) detail = `<p class="ld-sub">${ts.length > 1 ? "入門版本，基本配備就有：" : "單一版本，標準配備有："}</p><ul>${(current.全車系標配重點 || []).slice(0, 5).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
@@ -175,7 +179,8 @@
       }).join("") + `</ol>`;
     }
     if (ts.length > 1) {
-      const pair = ts.length >= 2 ? [ts[0].id, ts[1].id].join(",") : "";
+      const first = ts.filter((t) => t.車身類型 === bodies[0]).sort((a, b) => a.建議售價 - b.建議售價);  // 預設車身的前兩個版本
+      const pair = first.length >= 2 ? [first[0].id, first[1].id].join(",") : (ts.length >= 2 ? [ts[0].id, ts[1].id].join(",") : "");
       html += `<button type="button" class="ghost strong" data-compare="${pair}">詳細比較這款車的版本 →</button>`;
     }
     return html;

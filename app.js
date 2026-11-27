@@ -30,6 +30,8 @@
     try {
       const [d, r] = await Promise.all([fetch(encodeURI(S.車款資料)), fetch(encodeURI(S.題目規則))]);
       DATA = await d.json();
+      // 網頁上的版本名稱：Sedan／Hatchback 改成中文（資料檔維持型錄寫法）
+      for (const c of DATA["車款"]) for (const v of c["版本"]) v.名稱 = v.名稱.replace(/^Sedan /, "四門轎車 ").replace(/^Hatchback /, "五門掀背車 ");
       RULES = await r.json();
       window.App.DATA = DATA;
       window.App.RULES = RULES;
@@ -339,7 +341,16 @@
 
   function typeLabel(t) {
     if (!t.車型分類.includes("／")) return t.車型分類;
-    return { 轎車: "四門轎車", 掀背: "五門掀背" }[t.車身類型] || t.車型分類;
+    return { 轎車: "四門轎車", 掀背: "五門掀背車" }[t.車身類型] || t.車型分類;
+  }
+
+  // 同一車款有不同車身（Mazda3 四門／五門）時的切換按鈕；預設五門掀背車（士倫：五門比較多人選）
+  const BODY_ORDER = ["掀背", "轎車"];
+  function bodiesOf(trims) { return [...new Set(trims.map((t) => t.車身類型))].sort((a, b) => BODY_ORDER.indexOf(a) - BODY_ORDER.indexOf(b)); }
+  function bodySwitch(trims, cur, attr) {
+    const bs = bodiesOf(trims);
+    if (bs.length < 2) return "";
+    return `<div class="body-switch" role="tablist">${bs.map((b) => `<button type="button" class="${b === cur ? "on" : ""}" ${attr}="${b}">${esc({ 轎車: "四門轎車", 掀背: "五門掀背車" }[b] || b)}</button>`).join("")}</div>`;
   }
 
   function esc(s) {
@@ -437,7 +448,7 @@
   // 給「我要比較」等其他模組使用
   const setColor = (trimId, code) => { chosenColor[trimId] = code; };
   const hasColor = (trimId) => trimId in chosenColor;
-  window.App = { show, goBack, goHome, toast, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, colorViewer, preloadColors, gains, listText, setColor, hasColor,
+  window.App = { show, goBack, goHome, toast, bodiesOf, bodySwitch, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, colorViewer, preloadColors, gains, listText, setColor, hasColor,
     isMobileDevice: () => isMobile(), DATA: null, RULES: null };
 
   // ---------- 綁定 ----------
