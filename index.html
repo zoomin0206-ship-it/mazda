@@ -12,7 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="img/brand/logo.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png">
   <link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=d365c1c2">
+  <link rel="stylesheet" href="style.css?v=4a479548">
 </head>
 <body>
   <div class="app" id="app">
@@ -151,12 +151,22 @@
       </nav>
       <div id="model-body"></div>
       <div id="model-eq" class="eq" hidden></div>
-      <div class="cta">
-        <p class="cta-lead" id="model-cta-lead">想親自坐坐看？</p>
-        <p class="cta-text">傳 LINE 給我，幫你安排賞車、試乘，也可以問我任何關於這台車的問題。</p>
-        <button class="primary line" id="model-line">傳 LINE 預約試乘</button>
-      </div>
-      <button class="ghost" id="model-quiz">不確定適不適合？用 8 個問題確認 →</button>
+      <section class="next" aria-labelledby="next-title">
+        <h2 id="next-title">看完了，下一步？</h2>
+        <div class="next-step main">
+          <p class="next-h">🚗 <span id="model-cta-lead">想親自坐坐看？</span></p>
+          <p class="next-t">傳 LINE 給我，幫你安排賞車、試乘，也可以問我任何關於這台車的問題。</p>
+          <button class="primary line" id="model-line">傳 LINE 預約賞車試乘</button>
+        </div>
+        <div class="next-step" id="model-rivals-box">
+          <p class="next-h">🤔 還在跟其他車比較</p>
+          <div id="model-rivals"></div>
+        </div>
+        <div class="next-step">
+          <p class="next-h">❓ 不確定這台適不適合你</p>
+          <button class="next-link" id="model-quiz">用 8 個問題確認 →</button>
+        </div>
+      </section>
       <p class="fineprint" id="model-foot"></p>
     </section>
   </div>
@@ -180,6 +190,6 @@
   <script src="app.js?v=c2b89416"></script>
   <script src="compare.js?v=74a8ac4e"></script>
   <script src="equip.js?v=fa322ce2"></script>
-  <script src="model.js?v=c75095bd"></script>
+  <script src="model.js?v=533ce40a"></script>
 </body>
 </html>

@@ -105,8 +105,6 @@
     }
     // 6 台灣生活實用資訊
     sections.push(section("台灣生活實用資訊", "life", lifeInfo(ts)));
-    // 7 常被拿來比較的車
-    sections.push(section("常被拿來比較的車", "rivals", rivals(heroTrim)));
 
     // 總覽最上面：告訴客戶這一頁還有哪些內容
     sections.splice(1, 0, `<div class="mp-guide">
@@ -126,6 +124,9 @@
     showTab(wantTab === "view" && view.length ? "view" : "ov");
     for (const b of $("model-body").querySelectorAll("[data-go]")) b.addEventListener("click", () => showTab(b.dataset.go, true));
     $("model-cta-lead").textContent = `想親自坐坐看 ${current.名稱}？`;
+    // 下一步：常被拿來比較的車（三個分頁最下面共用）
+    $("model-rivals").innerHTML = rivals(heroTrim);
+    for (const b of $("model-rivals").querySelectorAll("[data-compare]")) b.addEventListener("click", () => window.Compare.open(b.dataset.compare.split(",")));
     const p = A.RULES["計算參數"];
     $("model-foot").textContent = `價格為台灣馬自達公告之建議售價。規格、配備以台灣官方型錄為準；車輛圖片來源：台灣馬自達官網。` +
       (ratings().length ? "安全評等為海外第三方測試成績，海外車型配備可能和台灣版不同。" : "") +
