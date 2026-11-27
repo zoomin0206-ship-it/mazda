@@ -5,7 +5,8 @@
   const carType = (x) => (x.endsWith("車") ? x : x + "車"); // 轎車／掀背車／休旅車
   const $ = (id) => document.getElementById(id);
   let A, CFG, TRIMS, CARS, ITEMS;
-  let slots = [];        // 每格：{ car: 車款id, trim: 版本id }
+  let picked = [];       // 候選名單：已選的版本 id（依加入順序）
+  let browseCar = null;  // 選單上目前在看的車款
   let current = [];      // 比較中的版本
 
   function init() {
@@ -34,10 +35,8 @@
   function open(ids) {
     ids = (ids || []).filter(trimById).slice(0, maxSlots());
     if (ids.length >= 2) return view(ids);
-    slots = [0, 1].map((i) => {
-      const t = ids[i] && trimById(ids[i]);
-      return { car: t ? t.車款id : null, trim: t ? t.id : null };
-    });
+    picked = ids.slice();
+    browseCar = ids.length ? trimById(ids[ids.length - 1]).車款id : null;
     renderPick();
     A.show("compare-pick", { url: location.pathname });
   }
@@ -89,51 +88,52 @@
       <span class="tc-price">${A.wan(t.建議售價)}元</span>${body}</button>`;
   }
 
-  // ---------- 選車畫面 ----------
+  // ---------- 選車畫面：一組選單＋下方固定的候選名單 ----------
   function renderPick() {
     const box = $("slots");
-    box.style.setProperty("--n", slots.length);
-    box.innerHTML = slots.map((s, i) => {
-      const optional = i >= 2;
-      const models = CARS.map((c) => `<button type="button" class="model-chip${s.car === c.id ? " on" : ""}" data-slot="${i}" data-car="${c.id}" aria-pressed="${s.car === c.id}">
-          ${c.圖片 ? `<img src="${A.esc(c.圖片)}" alt="" loading="lazy">` : ""}<b>${A.esc(c.名稱)}</b><span>${A.esc(c.車型分類)}</span></button>`).join("");
-      const n = s.car ? trimsOf(s.car).length : 0;
-      const trims = s.car ? trimsOf(s.car).map((t) => trimCard(t, s.trim === t.id, i)).join("") : "";
-      return `<div class="slot">
-        <div class="slot-top"><p class="slot-label">第 ${i + 1} 台${optional ? "（選填）" : ""}</p>
-          ${optional ? `<button type="button" class="slot-x" data-remove="${i}" aria-label="移除第 ${i + 1} 台">×</button>` : ""}</div>
+    box.style.setProperty("--n", 1);
+    const max = maxSlots();
+    const models = CARS.map((c) => {
+      const cnt = picked.filter((id) => trimById(id).車款id === c.id).length;
+      return `<button type="button" class="model-chip${browseCar === c.id ? " on" : ""}" data-car="${c.id}" aria-pressed="${browseCar === c.id}">
+        ${c.圖片 ? `<img src="${A.esc(c.圖片)}" alt="" loading="lazy">` : ""}<b>${A.esc(c.名稱)}</b><span>${A.esc(c.車型分類)}</span>${cnt ? `<em class="mc-cnt">已選 ${cnt}</em>` : ""}</button>`;
+    }).join("");
+    const ts = browseCar ? trimsOf(browseCar) : [];
+    box.innerHTML = `<div class="slot">
         <p class="slot-step">① 選車款<span class="swipe-hint">左右滑動</span></p>
         <div class="swipe models">${models}</div>
-        ${s.car ? `<p class="slot-step">② 選版本${n > 1 ? `<span class="swipe-hint">共 ${n} 個版本，左右滑動</span>` : ""}</p><div class="swipe trims">${trims}</div>` : ""}
+        ${browseCar ? `<p class="slot-step">② 點版本，加進候選名單${ts.length > 1 ? `<span class="swipe-hint">共 ${ts.length} 個版本，左右滑動</span>` : ""}</p>
+          <div class="swipe trims">${ts.map((t) => trimCard(t, picked.includes(t.id), 0)).join("")}</div>` : `<p class="pick-empty">先點一台車款，再選版本</p>`}
       </div>`;
-    }).join("") + (slots.length < maxSlots() ? `<button type="button" class="slot-add" id="slot-add">＋ 再加一台比較</button>` : "");
+    for (const b of box.querySelectorAll(".model-chip")) b.addEventListener("click", () => { browseCar = b.dataset.car; renderPick(); });
+    for (const b of box.querySelectorAll(".trim-card")) b.addEventListener("click", () => toggle(b.dataset.trim));
 
-    for (const b of box.querySelectorAll(".model-chip")) b.addEventListener("click", () => {
-      const i = +b.dataset.slot, ts = trimsOf(b.dataset.car);
-      slots[i] = { car: b.dataset.car, trim: ts.length === 1 ? ts[0].id : null };
-      renderPick();
-    });
-    for (const b of box.querySelectorAll(".trim-card")) b.addEventListener("click", () => {
-      slots[+b.dataset.slot].trim = b.dataset.trim;
-      renderPick();
-    });
-    for (const b of box.querySelectorAll(".slot-x")) b.addEventListener("click", () => {
-      slots.splice(+b.dataset.remove, 1);
-      renderPick();
-    });
-    const add = $("slot-add");
-    if (add) add.addEventListener("click", () => { slots.push({ car: null, trim: null }); renderPick(); });
+    // 候選名單（固定在畫面下方）
+    $("pick-tray").innerHTML = picked.length
+      ? picked.map((id) => { const t = trimById(id); return `<div class="tray-car">${img(t, "tray-img")}<div><b>${A.esc(t.車款)}</b><span>${A.esc(t.名稱)}</span><span class="tray-price">${A.wan(t.建議售價)}元</span></div>
+          <button type="button" class="tray-x" data-id="${id}" aria-label="移除 ${A.esc(t.車款)} ${A.esc(t.名稱)}">×</button></div>`; }).join("")
+        + (picked.length < max ? `<div class="tray-slot">還可以加 ${max - picked.length} 台</div>` : "")
+      : `<p class="tray-empty">候選名單是空的：點上面的版本，就會加進來（最多 ${max} 台）</p>`;
+    for (const b of $("pick-tray").querySelectorAll(".tray-x")) b.addEventListener("click", () => toggle(b.dataset.id));
 
-    // 已選的車款、版本在橫向滑動列中捲到看得到的位置（不影響整頁捲動）
-    requestAnimationFrame(() => {   // 等畫面顯示出來才量得到寬度
+    requestAnimationFrame(() => {   // 已選的車款、版本在橫向滑動列中捲到看得到的位置
       for (const el of box.querySelectorAll(".swipe .on")) {
         const row = el.parentElement;
         row.scrollLeft = el.offsetLeft - (row.clientWidth - el.clientWidth) / 2;
       }
     });
-    const n = slots.filter((s) => s.trim).length;
+    const n = picked.length;
     $("do-compare").disabled = n < 2;
-    $("do-compare").textContent = n < 2 ? `再選 ${2 - n} 台就可以比較` : `開始比較這 ${n} 台`;
+    $("do-compare").textContent = n < 2 ? `再選 ${2 - n} 台就可以比較` : `開始比較這 ${n} 台 →`;
+  }
+
+  // 點版本：沒選就加進候選名單，已選就移除；選滿了提醒先移除一台
+  function toggle(id) {
+    const i = picked.indexOf(id);
+    if (i >= 0) picked.splice(i, 1);
+    else if (picked.length >= maxSlots()) return A.toast(`最多比較 ${maxSlots()} 台，先移除一台再加`);
+    else picked.push(id);
+    renderPick();
   }
 
   // ---------- 比較結果 ----------
@@ -265,7 +265,7 @@
     });
     const add = $("cmp-add");
     if (add) add.addEventListener("click", () => {
-      slots = current.map((t) => ({ car: t.車款id, trim: t.id })).concat([{ car: null, trim: null }]);
+      picked = current.map((t) => t.id); browseCar = null;
       renderPick();
       A.show("compare-pick", { url: location.pathname });
     });
@@ -339,10 +339,10 @@
 
   // ---------- 綁定 ----------
   $("go-compare").addEventListener("click", () => open([]));
-  $("do-compare").addEventListener("click", () => view(slots.filter((s) => s.trim).map((s) => s.trim)));
+  $("do-compare").addEventListener("click", () => view(picked.slice()));
   $("pick-back").addEventListener("click", () => A.goBack(A.goHome));
   $("view-back").addEventListener("click", () => {   // 「換車比較」：回到選車畫面，保留目前選的車
-    slots = current.map((t) => ({ car: t.車款id, trim: t.id }));
+    picked = current.map((t) => t.id); browseCar = current[current.length - 1].車款id;
     renderPick();
     A.show("compare-pick", { url: location.pathname });
   });
