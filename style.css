@@ -242,7 +242,7 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .cmp-summary p:last-child { margin-bottom: 0; }
 .switch { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 6px 0 4px; }
 .switch input { width: 20px; height: 20px; accent-color: var(--accent); }
-.cmp-nav { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0 4px; scrollbar-width: none; }
+.cmp-nav { position: sticky; z-index: 4; display: flex; gap: 8px; overflow-x: auto; margin: 0 -18px; padding: 8px 18px 8px; background: var(--bg); border-bottom: 1px solid var(--line); scrollbar-width: none; }
 .cmp-nav::-webkit-scrollbar { display: none; }
 .cmp-nav button { flex: none; border: 1px solid var(--line); background: #fff; border-radius: 99px; padding: 6px 12px; font-size: 13px; }
 .cmp-sec { margin: 22px 0 6px; font-size: 16px; color: var(--accent); scroll-margin-top: 140px; }
@@ -510,3 +510,6 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .body-switch button.on { background: #fff; color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
 .mp-sec .body-switch { margin: 0 0 12px; }
 .eq-body .body-switch { margin: 0 18px 6px; }
+.cmp-nav button.here { background: #2f4a63; border-color: #2f4a63; color: #fff; }
+.cmp-head.compact .cmp-img, .cmp-head.compact .cmp-more, .cmp-head.compact .cmp-x, .cmp-head.compact .cmp-add { display: none; }
+.cmp-head.compact { padding-top: 6px; padding-bottom: 6px; }

@@ -160,6 +160,7 @@
     renderView();
     const ids2 = current.map((t) => t.id);
     A.show("compare-view", { pop: opts.pop, url: `${location.pathname}?compare=${ids2.join(",")}`, state: { ids: ids2 } });
+    fitNav();  // 畫面顯示出來才量得到車款標題的高度
   }
   // 返回手勢回到比較頁時還原
   function restore(st) {
@@ -271,11 +272,14 @@
     $("cmp-foot").textContent = `價格為台灣馬自達公告之建議售價。規格、配備以台灣官方型錄為準；車輛圖片來源：台灣馬自達官網。標示 * 的${A.RULES["結果頁文字"].海外數據註記}。` +
       `油錢以每年 ${A.fmt(p.每年行駛公里)} 公里、油價每公升 ${p.油價每公升} 元估算。本網站由 ${window.SITE.顧問職稱}個人製作，非台灣馬自達官方網站。`;
 
+    // 分類標籤黏在車款標題下方，一直看得到；點了跳到那一類，往下滑時自動反白目前那一類
+    fitNav();
     for (const b of $("cmp-nav").querySelectorAll("button")) b.addEventListener("click", () => {
+      navLock = Date.now(); markNav(b.dataset.target);
       const el = $(b.dataset.target);
-      const headH = $("cmp-head").offsetHeight + 8;
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - headH, behavior: "smooth" });
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - ($("cmp-head").offsetHeight + $("cmp-nav").offsetHeight + 8), behavior: "smooth" });
     });
+    navCur = null; navSpy();
     for (const b of document.querySelectorAll(".cmp-x")) b.addEventListener("click", () => {
       const ids = current.map((t) => t.id).filter((_, i) => i !== +b.dataset.i);
       if (ids.length >= 2) view(ids);
@@ -288,6 +292,31 @@
       A.show("compare-pick", { url: location.pathname });
     });
   }
+
+  // ---------- 分類標籤：固定在上方＋反白目前那一類 ----------
+  let navLock = 0, navCur = null;
+  function fitNav() { const h = $("cmp-head"); if (h.offsetHeight) $("cmp-nav").style.top = h.offsetHeight + "px"; }
+  function markNav(id) {
+    const nav = $("cmp-nav");
+    for (const b of nav.querySelectorAll("button")) {
+      const on = b.dataset.target === id; b.classList.toggle("here", on);
+      if (on) nav.scrollTo({ left: b.offsetLeft - nav.clientWidth / 2 + b.offsetWidth / 2, behavior: "smooth" });
+    }
+  }
+  function navSpy() {
+    if ($("compare-view").hidden) return;
+    // 滑到比較表之後，上方的車款標題縮小（拿掉圖片和連結），把畫面留給內容
+    const compact = $("cmp-summary").getBoundingClientRect().bottom < 0;
+    if ($("cmp-head").classList.contains("compact") !== compact) { $("cmp-head").classList.toggle("compact", compact); fitNav(); }
+    if (Date.now() - navLock < 900) return;
+    fitNav();
+    const line = $("cmp-nav").getBoundingClientRect().bottom + 12;
+    let cur = null;
+    for (const b of $("cmp-nav").querySelectorAll("button")) { const el = $(b.dataset.target); if (el && el.getBoundingClientRect().top <= line) cur = b.dataset.target; }
+    if (cur !== navCur) { navCur = cur; markNav(cur); }
+  }
+  addEventListener("scroll", navSpy, { passive: true });
+  addEventListener("resize", fitNav);
 
   // ---------- 一句話結論 ----------
   // 比較重點：一台一列分開寫，價格、多了什麼、空間、動力、養車費各一行，好掃讀
