@@ -18,12 +18,16 @@
     return cache[carId];
   }
 
-  const vname = (ix) => ix.length === D.版本.length ? "全車型" : ix.map((i) => D.版本[i]).join("、");
+  // scope＝目前車身的版本（Mazda3 選了四門或五門，就只算那種車身；其他車款＝全部版本）
+  let scope = [];
+  const nm = (i) => scope.length < D.版本.length ? D.版本[i].replace(/^(四門轎車|五門掀背車) /, "") : D.版本[i];
+  const vname = (ix) => { const v = ix.filter((i) => scope.includes(i)); return v.length === scope.length ? "全車型" : v.map(nm).join("、"); };
   function ver(it) {
     if (sel >= 0) { const n = it.細節.map((d) => d.附註[sel]).filter(Boolean); return `<div class="eq-ver">✓ ${esc(D.版本[sel])} 有${n.length ? "（" + esc(n.join("、")) + "）" : ""}</div>`; }
-    const diff = it.細節.filter((d) => (it.細節.length > 1 && d.版本.length !== it.版本.length) || Object.keys(d.附註).length);
+    const inS = (ix) => ix.filter((i) => scope.includes(i)).length;
+    const diff = it.細節.filter((d) => inS(d.版本) && ((it.細節.length > 1 && inS(d.版本) !== inS(it.版本)) || Object.keys(d.附註).some((i) => scope.includes(+i))));
     return `<div class="eq-ver">${esc(vname(it.版本))}${diff.length ? `<details class="eq-more"><summary>各版本差異</summary><ul>${diff.map((d) =>
-      `<li>${esc(d.名稱)}：${esc(vname(d.版本))}${Object.keys(d.附註).length ? "（" + Object.entries(d.附註).map(([i, n]) => D.版本[i] + " " + n).join("；") + "）" : ""}${d.選配 ? "（選配）" : ""}</li>`).join("")}</ul></details>` : ""}</div>`;
+      `<li>${esc(d.名稱)}：${esc(vname(d.版本))}${Object.keys(d.附註).length ? "（" + Object.entries(d.附註).filter(([i]) => scope.includes(+i)).map(([i, n]) => nm(+i) + " " + n).join("；") + "）" : ""}${d.選配 ? "（選配）" : ""}</li>`).join("")}</ul></details>` : ""}</div>`;
   }
   const act = (it) => it.作動.length ? `<details class="eq-more"><summary>作動條件</summary><ul>${it.作動.map((a) => `<li>${esc(a.功能)}：${esc(a.條件)}</li>`).join("")}</ul></details>` : "";
   // 說明文字排版：第一句當重點，其他句子變成條列；①②③ 拆成小清單；版本名稱、數字加強顯示（內容不刪減）
@@ -38,7 +42,7 @@
     const li = ss.map((x) => { const ps = x.split(/(?=[①②③④⑤⑥])/); return ps.length > 1 ? `<li>${hl(ps.shift().replace(/[：:]$/, ""))}${sub(ps)}</li>` : `<li>${hl(x.replace(/。$/, ""))}</li>`; });
     return L + (li.length ? `<ul class="eq-pts">${li.join("")}</ul>` : "");
   }
-  const body = (it) => `${it.標籤 ? `<span class="eq-tag">${esc(it.標籤)}</span>` : ""}<div class="eq-d">${fmt(it.說明)}</div>${ver(it)}${act(it)}`;
+  const cardBody = (it) => `${it.標籤 ? `<span class="eq-tag">${esc(it.標籤)}</span>` : ""}<div class="eq-d">${fmt(it.說明)}</div>${ver(it)}${act(it)}`;
 
   function sysList() {
     const sys = { "SBS 智慧防撞": "屬於 SBS 智慧防撞", "ELK 緊急車道偏移防止": "屬於 ELK 緊急車道偏移防止" };
@@ -47,16 +51,17 @@
   }
 
   function draw() {
-    const vis = D.items.filter((i) => sel < 0 || i.版本.includes(sel));
-    const sc = D.情境.filter((s) => vis.some((i) => i.情境 === s));
     // 有兩種車身（Mazda3）時，先切車身，版本按鈕只顯示那種車身
     const bset = [...new Set(D.車身 || [])].filter(Boolean).sort((a, b) => ["掀背", "轎車"].indexOf(a) - ["掀背", "轎車"].indexOf(b));
     if (bset.length > 1 && !bset.includes(body)) body = bset[0];
     const showIdx = [...D.版本.keys()].filter((i) => bset.length < 2 || D.車身[i] === body);
+    scope = showIdx;
+    const vis = D.items.filter((i) => sel < 0 ? i.版本.some((x) => scope.includes(x)) : i.版本.includes(sel));
+    const sc = D.情境.filter((s) => vis.some((i) => i.情境 === s));
     root.querySelector(".eq-body").innerHTML = bset.length > 1 ? window.App.bodySwitch(D.版本.map((_, i) => ({ 車身類型: D.車身[i] })), body, "data-eqbody") : "";
     for (const b of root.querySelectorAll("[data-eqbody]")) b.addEventListener("click", () => { body = b.dataset.eqbody; if (sel >= 0 && D.車身[sel] !== body) sel = -1; draw(); });
     root.querySelector(".eq-trims").innerHTML = [-1, ...showIdx].map((i) =>
-      `<button type="button" class="eq-chip${i === sel ? " on" : ""}" data-sel="${i}">${i < 0 ? "全部版本" : esc(D.版本[i]) + `<small>${esc(D.售價[i])}</small>`}</button>`).join("");
+      `<button type="button" class="eq-chip${i === sel ? " on" : ""}" data-sel="${i}">${i < 0 ? "全部版本" : esc(nm(i)) + `<small>${esc(D.售價[i])}</small>`}</button>`).join("");
     root.querySelector(".eq-nav").innerHTML = sc.map((s, k) => `<button type="button" class="eq-chip" data-k="${k}">${esc(s)}</button>`).join("");
     root.querySelector(".eq-main").innerHTML =
       `<p class="eq-hint">照「用車的一天」整理，買了這台車會有什麼，一次看懂。${sel >= 0 ? `目前只顯示 <b>${esc(D.版本[sel])}（${esc(D.售價[sel])}）</b>有的配備。` : "點上面的版本，只看那個版本有的配備。"}</p>` +
@@ -64,8 +69,8 @@
         const its = vis.filter((i) => i.情境 === s), cards = its.filter((i) => i.層級 === "卡片"), lines = its.filter((i) => i.層級 !== "卡片");
         return `<section class="eq-scene" id="eq-s${k}"><div class="eq-band"><em>${k + 1}／${sc.length}</em><span>${esc(s)}</span><i>${its.length} 項</i></div>
           <p class="eq-hook">${esc(D.開場[s] || "")}</p>
-          ${cards.length ? `<p class="eq-sec">重點配備</p>` + cards.map((i) => `<div class="eq-card"><div class="eq-t">${esc(i.標題)}</div>${body(i)}</div>`).join("") : ""}
-          ${lines.length ? `<p class="eq-sec">${cards.length ? "其他配備（點一下看說明）" : "點一下看說明"}</p>` + lines.map((i) => `<details class="eq-line"><summary>${esc(i.標題)}</summary>${body(i)}</details>`).join("") : ""}
+          ${cards.length ? `<p class="eq-sec">重點配備</p>` + cards.map((i) => `<div class="eq-card"><div class="eq-t">${esc(i.標題)}</div>${cardBody(i)}</div>`).join("") : ""}
+          ${lines.length ? `<p class="eq-sec">${cards.length ? "其他配備（點一下看說明）" : "點一下看說明"}</p>` + lines.map((i) => `<details class="eq-line"><summary>${esc(i.標題)}</summary>${cardBody(i)}</details>`).join("") : ""}
           <div class="eq-end">✓ ${esc(s)}看完了${k < sc.length - 1 ? `　·　下一段：${esc(sc[k + 1])} ↓` : ""}</div></section>`;
       }).join("") + sysList();
     for (const b of root.querySelectorAll(".eq-trims .eq-chip")) b.addEventListener("click", () => { sel = +b.dataset.sel; draw(); });
