@@ -14,5 +14,5 @@ window.SITE = {
   車款資料: "data/cars.json?v=95bb1263",
   題目規則: "data/rules.json?v=233377d0",
   車款介紹: "data/intro.json?v=057943b7",
-  完整配備資料: "data/equipment/", 完整配備版本: "bad5b76e",
+  完整配備資料: "data/equipment/", 完整配備版本: "a633c353",
 };
