@@ -11,7 +11,8 @@
   async function load(carId) {
     if (carId in cache) return cache[carId];
     try {
-      const r = await fetch(encodeURI((window.SITE.完整配備資料 || "data/equipment/") + carId + ".json"));
+      const v = window.SITE.完整配備版本 ? "?v=" + window.SITE.完整配備版本 : "";
+      const r = await fetch(encodeURI((window.SITE.完整配備資料 || "data/equipment/") + carId + ".json") + v);
       cache[carId] = r.ok ? await r.json() : null;
     } catch (e) { cache[carId] = null; }
     return cache[carId];

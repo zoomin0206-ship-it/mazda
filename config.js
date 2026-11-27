@@ -11,8 +11,8 @@ window.SITE = {
   // LINE 官方帳號 ID（含 @），例如 "@abc1234"。留空時按鈕會顯示「設定中」
   LINE帳號: "@669ahlle",
   // 資料檔位置（相對於 web 資料夾）
-  車款資料: "data/cars.json",
-  題目規則: "data/rules.json",
-  車款介紹: "data/intro.json",
-  完整配備資料: "data/equipment/",
+  車款資料: "data/cars.json?v=95bb1263",
+  題目規則: "data/rules.json?v=233377d0",
+  車款介紹: "data/intro.json?v=057943b7",
+  完整配備資料: "data/equipment/", 完整配備版本: "10364f00",
 };
