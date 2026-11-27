@@ -110,7 +110,7 @@
         ${browseCar ? `<p class="slot-step">② 點版本，加進候選名單${ts.length > 1 ? `<span class="swipe-hint">共 ${ts.length} 個版本，左右滑動</span>` : ""}</p>
           ${A.bodySwitch(all, browseBody, "data-body")}
           <div class="swipe trims">${ts.map((t) => trimCard(t, picked.includes(t.id), 0)).join("")}</div>`
-          : `<p class="slot-step">② 選版本</p><div class="pick-hold">點上面的車款，這裡會出現各個版本</div>`}
+          : `<p class="pick-empty">② 點上面的車款，就會出現各個版本</p>`}
       </div>` + popular();
     for (const b of box.querySelectorAll(".model-chip")) b.addEventListener("click", () => { browseCar = b.dataset.car; browseBody = null; renderPick(); });
     for (const b of box.querySelectorAll("[data-body]")) b.addEventListener("click", () => { browseBody = b.dataset.body; renderPick(); });
