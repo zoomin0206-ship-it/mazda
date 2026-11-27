@@ -60,8 +60,7 @@
           ${cards.length ? `<p class="eq-sec">重點配備</p>` + cards.map((i) => `<div class="eq-card"><div class="eq-t">${esc(i.標題)}</div>${body(i)}</div>`).join("") : ""}
           ${lines.length ? `<p class="eq-sec">${cards.length ? "其他配備（點一下看說明）" : "點一下看說明"}</p>` + lines.map((i) => `<details class="eq-line"><summary>${esc(i.標題)}</summary>${body(i)}</details>`).join("") : ""}
           <div class="eq-end">✓ ${esc(s)}看完了${k < sc.length - 1 ? `　·　下一段：${esc(sc[k + 1])} ↓` : ""}</div></section>`;
-      }).join("") + sysList() +
-      `<p class="eq-fine">依台灣馬自達 ${esc(D.車款)} 型錄規格配備表整理，配備與作動條件以實車和車主手冊為準。駕駛輔助系統都有作動條件限制，車主仍需依實際路況駕駛。</p>`;
+      }).join("") + sysList();
     for (const b of root.querySelectorAll(".eq-trims .eq-chip")) b.addEventListener("click", () => { sel = +b.dataset.sel; draw(); });
     for (const b of root.querySelectorAll(".eq-nav .eq-chip")) b.addEventListener("click", () => go(+b.dataset.k));
     cur = -2; spy();

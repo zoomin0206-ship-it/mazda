@@ -241,6 +241,8 @@
     $("cmp-nav").innerHTML = nav.join("");
     $("cmp-table").innerHTML = html || `<p class="note">這幾台在列出的項目上完全一樣。</p>`;
     $("cmp-cta-lead").textContent = n === 2 ? "兩台都想試試看？" : "這幾台都想試試看？";
+    const ids = [...new Set(current.map((t) => t.車款id))];
+    $("cmp-models").innerHTML = ids.map((id) => `<button type="button" class="next-link" data-model="${A.esc(id)}">看 ${A.esc(current.find((t) => t.車款id === id).車款)} →</button>`).join("");
     const p = A.RULES["計算參數"];
     $("cmp-foot").textContent = `價格為台灣馬自達公告之建議售價。規格、配備以台灣官方型錄為準；車輛圖片來源：台灣馬自達官網。標示 * 的${A.RULES["結果頁文字"].海外數據註記}。` +
       `油錢以每年 ${A.fmt(p.每年行駛公里)} 公里、油價每公升 ${p.油價每公升} 元估算。本網站由 ${window.SITE.顧問職稱}個人製作，非台灣馬自達官方網站。`;
@@ -337,6 +339,8 @@
   $("only-diff").addEventListener("change", renderView);
   $("cmp-line").addEventListener("click", sendLine);
   $("cmp-home").addEventListener("click", () => A.show("home"));
+  $("cmp-quiz").addEventListener("click", () => $("go-quiz").click());
+  $("cmp-models").addEventListener("click", (e) => { const b = e.target.closest("[data-model]"); if (b) window.Model.open(b.dataset.model); });
   document.addEventListener("app-ready", init);
   window.Compare = { open };
 })();

@@ -57,7 +57,10 @@
   }
 
   // ---------- 車款介紹頁 ----------
+  let cameFrom = null; // 從推薦結果或比較頁點進來時，「←」要回到那裡
   function openModel(carId) {
+    const vis = document.querySelector(".screen:not([hidden])");
+    if (vis && vis.id !== "model") cameFrom = (vis.id === "result" || vis.id === "compare-view") ? { id: vis.id, url: location.href } : null;
     const wantTab = (location.search.match(/[?&]tab=(\w+)/) || [])[1];  // 網址指定的分頁（例如分享 ?car=cx5&tab=eq）
     current = CARS.find((c) => c.id === carId);
     const ts = trimsOf(carId);
@@ -130,7 +133,7 @@
     const p = A.RULES["計算參數"];
     $("model-foot").textContent = `價格為台灣馬自達公告之建議售價。規格、配備以台灣官方型錄為準；車輛圖片來源：台灣馬自達官網。` +
       (ratings().length ? "安全評等為海外第三方測試成績，海外車型配備可能和台灣版不同。" : "") +
-      `標示 * 的${A.RULES["結果頁文字"].海外數據註記}。油錢以每年 ${A.fmt(p.每年行駛公里)} 公里、油價每公升 ${p.油價每公升} 元估算。` +
+      `標示 * 的${A.RULES["結果頁文字"].海外數據註記}。完整配備的作動條件以實車和車主手冊為準；駕駛輔助系統都有作動條件限制，仍需依實際路況駕駛。油錢以每年 ${A.fmt(p.每年行駛公里)} 公里、油價每公升 ${p.油價每公升} 元估算。` +
       `本網站由 ${window.SITE.顧問職稱}個人製作，非台灣馬自達官方網站。`;
     for (const b of $("model-body").querySelectorAll("[data-compare]")) {
       b.addEventListener("click", () => window.Compare.open(b.dataset.compare.split(",")));
@@ -266,7 +269,11 @@
   // ---------- 綁定 ----------
   $("go-models").addEventListener("click", openList);
   $("models-back").addEventListener("click", () => { setUrl(null); A.show("home"); });
-  $("model-back").addEventListener("click", openList);
+  $("model-back").addEventListener("click", () => {
+    if (cameFrom) { history.replaceState(null, "", cameFrom.url); A.show(cameFrom.id); cameFrom = null; }
+    else openList();
+  });
+  $("models-quiz").addEventListener("click", () => { setUrl(null); $("go-quiz").click(); });
   $("model-line").addEventListener("click", sendLine);
   $("model-quiz").addEventListener("click", () => { setUrl(null); $("go-quiz").click(); });
   document.addEventListener("app-ready", init);

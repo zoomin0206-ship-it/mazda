@@ -189,7 +189,9 @@
       `本網站由 ${S.顧問職稱}個人製作，非台灣馬自達官方網站。`;
     window._last = results;
     preloadColors(results.map((r) => r.t));
-    $("compare-these").hidden = results.length < 2;
+    $("compare-these-box").hidden = results.length < 2;
+    const carIds = [...new Set(results.map((r) => r.t.車款id))];
+    $("res-models").innerHTML = carIds.map((id) => { const r = results.find((x) => x.t.車款id === id); return `<button type="button" class="next-link" data-model="${esc(id)}">看 ${esc(r.t.車款)} →</button>`; }).join("");
     show("result");
   }
 
@@ -418,6 +420,7 @@
   $("send-line").addEventListener("click", sendLine);
   document.addEventListener("click", onSwatch);  // 結果頁、車款介紹頁的色點都適用
   $("cards").addEventListener("click", (e) => { const b = e.target.closest(".more-link"); if (b) window.Model.open(b.dataset.model); });
+  $("res-models").addEventListener("click", (e) => { const b = e.target.closest("[data-model]"); if (b) window.Model.open(b.dataset.model); });
   $("compare-these").addEventListener("click", () => window.Compare.open(window._last.map((r) => r.t.id)));
   $("qr-close").addEventListener("click", () => ($("qr-modal").hidden = true));
   $("qr-modal").addEventListener("click", (e) => { if (e.target.id === "qr-modal") $("qr-modal").hidden = true; });
