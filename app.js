@@ -42,10 +42,38 @@
     }
   }
 
-  function show(id) {
+  // 畫面切換：每換一個畫面就記進瀏覽器歷史，手機的返回手勢／返回鍵才會回到上一個畫面，而不是直接離開網站
+  // opts.url：這個畫面的網址（例如 ?car=cx5）；opts.state：還原畫面需要的資料；opts.pop：是從返回手勢還原的，不要再記一次
+  function show(id, opts = {}) {
     for (const s of document.querySelectorAll(".screen")) s.hidden = s.id !== id;
+    $("brandbar").hidden = id === "home";
     window.scrollTo(0, 0);
+    if (opts.pop) { if (id === "home") window.history.replaceState(window.history.state, "", location.pathname); return; }
+    const url = opts.url || location.pathname;
+    const depth = ((window.history.state && window.history.state.depth) || 0) + 1;
+    window.history.pushState(Object.assign({ screen: id, depth }, opts.state || {}), "", url);
   }
+  // 頁面上的「←」：有上一個畫面就回去（跟返回手勢一樣），從外部連結直接進來的就用 fallback
+  function goBack(fallback) {
+    if (window.history.state && window.history.state.depth > 0) window.history.back();
+    else fallback();
+  }
+  const goHome = () => show("home");
+  // 返回手勢：依記錄的畫面還原
+  window.addEventListener("popstate", (e) => {
+    const st = e.state || { screen: "home" };
+    const pop = { pop: true };
+    if (st.screen === "quiz" && st.q && RULES) {
+      const i = history.lastIndexOf(st.q);
+      history = i >= 0 ? history.slice(0, i) : history;
+      showQuestion(st.q); return show("quiz", pop);
+    }
+    if (st.screen === "result" && window._last) return show("result", pop);
+    if (st.screen === "model" && window.Model) return window.Model.open(st.car, { pop: true, tab: st.tab });
+    if (st.screen === "models" && window.Model) return window.Model.list(pop);
+    if ((st.screen === "compare-view" || st.screen === "compare-pick") && window.Compare) return window.Compare.restore(st);
+    show("home", pop);
+  });
 
   // ---------- 題目流程 ----------
   function flow() {
@@ -58,8 +86,9 @@
 
   function startQuiz() {
     answers = {}; history = [];
-    showQuestion(flow()[0].id);
-    show("quiz");
+    const q0 = flow()[0].id;
+    showQuestion(q0);
+    show("quiz", { state: { q: q0 } });
   }
 
   function showQuestion(qid) {
@@ -147,13 +176,12 @@
     const list = flow();
     const idx = list.findIndex((q) => q.id === current.id);
     history.push(current.id);
-    if (idx + 1 < list.length) showQuestion(list[idx + 1].id);
+    if (idx + 1 < list.length) { const q = list[idx + 1].id; showQuestion(q); show("quiz", { state: { q } }); }
     else showResult();
   }
 
   function back() {
-    if (!history.length) return show("home");
-    showQuestion(history.pop());
+    goBack(() => { if (!history.length) return show("home"); const q = history.pop(); showQuestion(q); show("quiz", { state: { q } }); });
   }
 
   // ---------- 結果 ----------
@@ -409,14 +437,16 @@
   // 給「我要比較」等其他模組使用
   const setColor = (trimId, code) => { chosenColor[trimId] = code; };
   const hasColor = (trimId) => trimId in chosenColor;
-  window.App = { show, toast, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, colorViewer, preloadColors, gains, listText, setColor, hasColor,
+  window.App = { show, goBack, goHome, toast, sendLineText, fname, typeLabel, fmt, wan, esc, colorOf, colorViewer, preloadColors, gains, listText, setColor, hasColor,
     isMobileDevice: () => isMobile(), DATA: null, RULES: null };
 
   // ---------- 綁定 ----------
   $("go-quiz").addEventListener("click", startQuiz);
   $("next").addEventListener("click", next);
   $("back").addEventListener("click", back);
-  $("restart").addEventListener("click", () => show("home"));
+  $("restart").addEventListener("click", startQuiz);
+  $("result-back").addEventListener("click", () => goBack(() => { const q = history.pop(); if (q) { showQuestion(q); show("quiz", { state: { q } }); } else show("home"); }));
+  $("brandbar").addEventListener("click", (e) => { e.preventDefault(); goHome(); });
   $("send-line").addEventListener("click", sendLine);
   document.addEventListener("click", onSwatch);  // 結果頁、車款介紹頁的色點都適用
   $("cards").addEventListener("click", (e) => { const b = e.target.closest(".more-link"); if (b) window.Model.open(b.dataset.model); });
@@ -425,6 +455,7 @@
   $("qr-close").addEventListener("click", () => ($("qr-modal").hidden = true));
   $("qr-modal").addEventListener("click", (e) => { if (e.target.id === "qr-modal") $("qr-modal").hidden = true; });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("qr-modal").hidden = true; });
+  window.history.replaceState({ screen: "home", depth: 0 }, "", location.pathname + location.search);
   load();
 
   // 診斷模式：網址加上 ?debug=1，頁面底部顯示裝置判斷資訊

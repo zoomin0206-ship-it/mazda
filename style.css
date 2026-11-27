@@ -444,3 +444,8 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 
 .next-links { display: flex; flex-wrap: wrap; gap: 4px 18px; }
 .next .cta-store { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+
+/* 每一頁最上面的品牌列：點了回首頁（首頁本身不顯示） */
+.brandbar { display: flex; justify-content: space-between; align-items: center; margin: -8px 0 14px; font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none; }
+.brandbar span { font-size: 12px; font-weight: 400; color: var(--muted); }
+.brandbar[hidden] { display: none; }

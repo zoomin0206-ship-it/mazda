@@ -36,7 +36,7 @@
   const filled = (x) => Array.isArray(x) ? x.length > 0 : !!x;
 
   // ---------- 車款列表 ----------
-  function openList() {
+  function openList(opts = {}) {
     $("model-list").innerHTML = CARS.map((c) => {
       const ts = trimsOf(c.id);
       return `<button type="button" class="model-card" data-car="${esc(c.id)}">
@@ -44,24 +44,13 @@
         <b>${esc(c.名稱)}</b><span>${esc(c.車型分類)}</span><span class="mc-price">${priceRange(ts)}</span></button>`;
     }).join("");
     for (const b of $("model-list").querySelectorAll(".model-card")) b.addEventListener("click", () => openModel(b.dataset.car));
-    setUrl(null);
-    A.show("models");
-  }
-
-  function setUrl(carId) {
-    const u = new URL(location.href);
-    u.searchParams.delete("compare");
-    u.searchParams.delete("tab");
-    if (carId) u.searchParams.set("car", carId); else u.searchParams.delete("car");
-    history.replaceState(null, "", u);
+    A.show("models", { pop: opts.pop, url: location.pathname });
   }
 
   // ---------- 車款介紹頁 ----------
-  let cameFrom = null; // 從推薦結果或比較頁點進來時，「←」要回到那裡
-  function openModel(carId) {
-    const vis = document.querySelector(".screen:not([hidden])");
-    if (vis && vis.id !== "model") cameFrom = (vis.id === "result" || vis.id === "compare-view") ? { id: vis.id, url: location.href } : null;
-    const wantTab = (location.search.match(/[?&]tab=(\w+)/) || [])[1];  // 網址指定的分頁（例如分享 ?car=cx5&tab=eq）
+  // opts.pop：從返回手勢還原；opts.tab：要停在哪個分頁
+  function openModel(carId, opts = {}) {
+    const wantTab = opts.tab || (location.search.match(/[?&]tab=(\w+)/) || [])[1];  // 網址指定的分頁（例如分享 ?car=cx5&tab=eq）
     current = CARS.find((c) => c.id === carId);
     const ts = trimsOf(carId);
     const intro = INTRO[carId] || {};
@@ -70,7 +59,7 @@
     A.preloadColors([heroTrim]);
     const recColor = intro.推薦車色 && (heroTrim.車色 || []).find((c) => c.代號 === intro.推薦車色);
     if (recColor && !A.hasColor(heroTrim.id)) A.setColor(heroTrim.id, recColor.代號);
-    setUrl(carId);
+    A.show("model", { pop: opts.pop, url: `${location.pathname}?car=${encodeURIComponent(carId)}`, state: { car: carId } });
 
     const sections = [], view = [];
     // 1 開場
@@ -138,7 +127,6 @@
     for (const b of $("model-body").querySelectorAll("[data-compare]")) {
       b.addEventListener("click", () => window.Compare.open(b.dataset.compare.split(",")));
     }
-    A.show("model");
   }
 
   // 仍在有效期限內的安全評等（IIHS 一年、Euro NCAP／ANCAP 六年）
@@ -253,7 +241,7 @@
     $("model-eq").hidden = t !== "eq";
     const u = new URL(location.href);
     if (t === "ov") u.searchParams.delete("tab"); else u.searchParams.set("tab", t);
-    history.replaceState(null, "", u);
+    history.replaceState(Object.assign({}, history.state, { tab: t }), "", u);
     if (scroll) { const y = $("mp-tabs").getBoundingClientRect().top + scrollY - 4; if (scrollY > y) scrollTo({ top: y }); }
   }
   for (const b of $("mp-tabs").querySelectorAll("button")) b.addEventListener("click", () => showTab(b.dataset.tab, true));
@@ -268,14 +256,11 @@
 
   // ---------- 綁定 ----------
   $("go-models").addEventListener("click", openList);
-  $("models-back").addEventListener("click", () => { setUrl(null); A.show("home"); });
-  $("model-back").addEventListener("click", () => {
-    if (cameFrom) { history.replaceState(null, "", cameFrom.url); A.show(cameFrom.id); cameFrom = null; }
-    else openList();
-  });
-  $("models-quiz").addEventListener("click", () => { setUrl(null); $("go-quiz").click(); });
+  $("models-back").addEventListener("click", () => A.goBack(A.goHome));
+  $("model-back").addEventListener("click", () => A.goBack(openList));   // 回上一頁（推薦結果、比較、車款列表）；從外部連結直接進來就到車款列表
+  $("models-quiz").addEventListener("click", () => $("go-quiz").click());
   $("model-line").addEventListener("click", sendLine);
-  $("model-quiz").addEventListener("click", () => { setUrl(null); $("go-quiz").click(); });
+  $("model-quiz").addEventListener("click", () => $("go-quiz").click());
   document.addEventListener("app-ready", init);
   window.Model = { open: openModel, list: openList };
 })();

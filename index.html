@@ -12,10 +12,11 @@
   <link rel="icon" type="image/svg+xml" href="img/brand/logo.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png">
   <link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=2f318cdf">
+  <link rel="stylesheet" href="style.css?v=a4407632">
 </head>
 <body>
   <div class="app" id="app">
+    <a class="brandbar" id="brandbar" href="./" hidden>士倫車｜Mazda 選車指南<span>回首頁</span></a>
     <!-- 首頁 -->
     <section class="screen" id="home">
       <header class="hero">
@@ -73,6 +74,10 @@
 
     <!-- 結果 -->
     <section class="screen" id="result" hidden>
+      <div class="topbar">
+        <button class="back" id="result-back" aria-label="修改答案">←</button>
+        <span class="topbar-title">修改答案</span>
+      </div>
       <header class="result-head">
         <p class="eyebrow">你的選車結果</p>
         <h2 id="result-title"></h2>
@@ -146,7 +151,6 @@
         <div class="next-step">
           <p class="next-h">❓ 還是不確定</p>
           <button class="next-link" id="cmp-quiz">用 8 個問題確認 →</button>
-          <button class="next-link" id="cmp-home">回首頁 →</button>
         </div>
       </section>
       <p class="fineprint" id="cmp-foot"></p>
@@ -212,9 +216,9 @@
   <script src="vendor/qrcode.js?v=6e6189e2"></script>
   <script src="config.js?v=28b8c238"></script>
   <script src="engine.js?v=e7769583"></script>
-  <script src="app.js?v=9d7691b8"></script>
-  <script src="compare.js?v=d9d9744c"></script>
+  <script src="app.js?v=6af2f8c2"></script>
+  <script src="compare.js?v=87cf1182"></script>
   <script src="equip.js?v=b00b3902"></script>
-  <script src="model.js?v=39ef4db8"></script>
+  <script src="model.js?v=ba6ad6c5"></script>
 </body>
 </html>

@@ -39,7 +39,7 @@
       return { car: t ? t.車款id : null, trim: t ? t.id : null };
     });
     renderPick();
-    A.show("compare-pick");
+    A.show("compare-pick", { url: location.pathname });
   }
 
   // ---------- 版本卡片：比上一個版本多了什麼 ----------
@@ -137,10 +137,16 @@
   }
 
   // ---------- 比較結果 ----------
-  function view(ids) {
+  function view(ids, opts = {}) {
     current = ids.map(trimById).filter(Boolean);
     renderView();
-    A.show("compare-view");
+    const ids2 = current.map((t) => t.id);
+    A.show("compare-view", { pop: opts.pop, url: `${location.pathname}?compare=${ids2.join(",")}`, state: { ids: ids2 } });
+  }
+  // 返回手勢回到比較頁時還原
+  function restore(st) {
+    if (st.screen === "compare-view" && st.ids) return view(st.ids, { pop: true });
+    renderPick(); A.show("compare-pick", { pop: true });
   }
 
   function fmtVal(item, v) {
@@ -261,7 +267,7 @@
     if (add) add.addEventListener("click", () => {
       slots = current.map((t) => ({ car: t.車款id, trim: t.id })).concat([{ car: null, trim: null }]);
       renderPick();
-      A.show("compare-pick");
+      A.show("compare-pick", { url: location.pathname });
     });
   }
 
@@ -330,17 +336,16 @@
   // ---------- 綁定 ----------
   $("go-compare").addEventListener("click", () => open([]));
   $("do-compare").addEventListener("click", () => view(slots.filter((s) => s.trim).map((s) => s.trim)));
-  $("pick-back").addEventListener("click", () => A.show("home"));
-  $("view-back").addEventListener("click", () => {
+  $("pick-back").addEventListener("click", () => A.goBack(A.goHome));
+  $("view-back").addEventListener("click", () => {   // 「換車比較」：回到選車畫面，保留目前選的車
     slots = current.map((t) => ({ car: t.車款id, trim: t.id }));
     renderPick();
-    A.show("compare-pick");
+    A.show("compare-pick", { url: location.pathname });
   });
   $("only-diff").addEventListener("change", renderView);
   $("cmp-line").addEventListener("click", sendLine);
-  $("cmp-home").addEventListener("click", () => A.show("home"));
   $("cmp-quiz").addEventListener("click", () => $("go-quiz").click());
   $("cmp-models").addEventListener("click", (e) => { const b = e.target.closest("[data-model]"); if (b) window.Model.open(b.dataset.model); });
   document.addEventListener("app-ready", init);
-  window.Compare = { open };
+  window.Compare = { open, restore };
 })();
