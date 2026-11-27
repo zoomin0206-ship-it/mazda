@@ -12,7 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="img/brand/logo.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png">
   <link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=a074cc9d">
+  <link rel="stylesheet" href="style.css?v=d365c1c2">
 </head>
 <body>
   <div class="app" id="app">
@@ -36,13 +36,13 @@
         <span class="route-arrow" aria-hidden="true">→</span>
       </button>
       <button class="route" id="go-compare" disabled>
-        <span class="route-title">我已經有想比較的車</span>
+        <span class="route-title">我在兩、三台之間猶豫</span>
         <span class="route-desc">選兩台車，直接告訴你差多少錢、多了什麼</span>
         <span class="route-arrow" aria-hidden="true">→</span>
       </button>
       <button class="route" id="go-models" disabled>
-        <span class="route-title">我想了解某一台車</span>
-        <span class="route-desc">版本怎麼選、適合誰、在台灣開的實際資訊</span>
+        <span class="route-title">我想深入了解某一台車</span>
+        <span class="route-desc">士倫觀點、版本怎麼選、每個配備怎麼用，都在這台車的頁面</span>
         <span class="route-arrow" aria-hidden="true">→</span>
       </button>
       <section class="about" aria-labelledby="about-title">
@@ -142,9 +142,15 @@
     <section class="screen" id="model" hidden>
       <div class="topbar">
         <button class="back" id="model-back" aria-label="回車款列表">←</button>
-        <span class="topbar-title">車款介紹</span>
+        <span class="topbar-title" id="model-title">車款介紹</span>
       </div>
+      <nav class="mp-tabs" id="mp-tabs" aria-label="車款頁分頁">
+        <button type="button" data-tab="ov" class="on">總覽</button>
+        <button type="button" data-tab="view">士倫觀點</button>
+        <button type="button" data-tab="eq">完整配備</button>
+      </nav>
       <div id="model-body"></div>
+      <div id="model-eq" class="eq" hidden></div>
       <div class="cta">
         <p class="cta-lead" id="model-cta-lead">想親自坐坐看？</p>
         <p class="cta-text">傳 LINE 給我，幫你安排賞車、試乘，也可以問我任何關於這台車的問題。</p>
@@ -169,10 +175,11 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="vendor/qrcode.js?v=6e6189e2"></script>
-  <script src="config.js?v=10debe76"></script>
+  <script src="config.js?v=28b8c238"></script>
   <script src="engine.js?v=e7769583"></script>
   <script src="app.js?v=c2b89416"></script>
-  <script src="compare.js?v=d687525a"></script>
-  <script src="model.js?v=7ac1e53d"></script>
+  <script src="compare.js?v=74a8ac4e"></script>
+  <script src="equip.js?v=fa322ce2"></script>
+  <script src="model.js?v=c75095bd"></script>
 </body>
 </html>

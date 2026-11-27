@@ -51,12 +51,14 @@
   function setUrl(carId) {
     const u = new URL(location.href);
     u.searchParams.delete("compare");
+    u.searchParams.delete("tab");
     if (carId) u.searchParams.set("car", carId); else u.searchParams.delete("car");
     history.replaceState(null, "", u);
   }
 
   // ---------- 車款介紹頁 ----------
   function openModel(carId) {
+    const wantTab = (location.search.match(/[?&]tab=(\w+)/) || [])[1];  // 網址指定的分頁（例如分享 ?car=cx5&tab=eq）
     current = CARS.find((c) => c.id === carId);
     const ts = trimsOf(carId);
     const intro = INTRO[carId] || {};
@@ -67,7 +69,7 @@
     if (recColor && !A.hasColor(heroTrim.id)) A.setColor(heroTrim.id, recColor.代號);
     setUrl(carId);
 
-    const sections = [];
+    const sections = [], view = [];
     // 1 開場
     sections.push(`<header class="mp-hero">
       <p class="eyebrow">${esc(current.車型分類)}${current.產地 ? `｜${esc(current.產地)}` : ""}</p>
@@ -81,7 +83,7 @@
     </header>`);
     // 2 適合誰／不適合誰
     if (filled(intro.適合) || filled(intro.不適合)) {
-      sections.push(section("適合誰？不適合誰？", "fit", `<div class="two-col">
+      view.push(section("適合誰？不適合誰？", "fit", `<div class="two-col">
         ${filled(intro.適合) ? `<div class="fit-box good"><h3>適合你，如果……</h3><ul>${intro.適合.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
         ${filled(intro.不適合) ? `<div class="fit-box bad"><h3>可能不適合，如果……</h3><ul>${intro.不適合.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
       </div>`, true));
@@ -90,7 +92,7 @@
     sections.push(section(ts.length > 1 ? "版本怎麼選？" : "標準配備有哪些？", "trims", ladder(ts, intro)));
     // 4 優缺點
     if (filled(intro.優點) || filled(intro.缺點)) {
-      sections.push(section("實際的優點和缺點", "proscons", `<div class="two-col">
+      view.push(section("實際的優點和缺點", "proscons", `<div class="two-col">
         ${filled(intro.優點) ? `<div class="fit-box good"><h3>優點</h3><ul>${intro.優點.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
         ${filled(intro.缺點) ? `<div class="fit-box bad"><h3>缺點</h3><ul>${intro.缺點.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
       </div>`, true));
@@ -98,7 +100,7 @@
     // 5 展間最常被問的問題
     const faq = (intro.常見問題 || []).filter((q) => q.問 && q.答);
     if (faq.length) {
-      sections.push(section("展間最常被問的問題", "faq", faq.map((q) =>
+      view.push(section("展間最常被問的問題", "faq", faq.map((q) =>
         `<details class="faq"><summary>${esc(q.問)}</summary><p>${esc(q.答)}</p></details>`).join(""), true));
     }
     // 6 台灣生活實用資訊
@@ -106,7 +108,23 @@
     // 7 常被拿來比較的車
     sections.push(section("常被拿來比較的車", "rivals", rivals(heroTrim)));
 
-    $("model-body").innerHTML = sections.join("");
+    // 總覽最上面：告訴客戶這一頁還有哪些內容
+    sections.splice(1, 0, `<div class="mp-guide">
+      ${view.length ? `<button type="button" data-go="view"><b>士倫觀點</b><span>適合誰、優缺點、展間常被問的問題</span></button>` : ""}
+      <button type="button" data-go="eq" class="eq-go" hidden><b>完整配備</b><span>買了這台車會有什麼、每個配備怎麼用</span></button></div>`);
+    $("model-body").innerHTML = `<div data-pane="ov">${sections.join("")}</div><div data-pane="view" hidden>${view.join("")}</div>`;
+    $("model-title").textContent = current.名稱;
+    const tabBtn = (t) => $("mp-tabs").querySelector(`[data-tab="${t}"]`);
+    tabBtn("view").hidden = !view.length;
+    tabBtn("eq").hidden = true;
+    $("model-eq").innerHTML = "";
+    window.Equip.render($("model-eq"), carId).then((ok) => {
+      tabBtn("eq").hidden = !ok;
+      for (const b of $("model-body").querySelectorAll(".eq-go")) b.hidden = !ok;
+      if (ok && wantTab === "eq") showTab("eq");
+    });
+    showTab(wantTab === "view" && view.length ? "view" : "ov");
+    for (const b of $("model-body").querySelectorAll("[data-go]")) b.addEventListener("click", () => showTab(b.dataset.go, true));
     $("model-cta-lead").textContent = `想親自坐坐看 ${current.名稱}？`;
     const p = A.RULES["計算參數"];
     $("model-foot").textContent = `價格為台灣馬自達公告之建議售價。規格、配備以台灣官方型錄為準；車輛圖片來源：台灣馬自達官網。` +
@@ -223,6 +241,18 @@
         <i>看比較 →</i></button>`;
     }).join("") + `</div>`;
   }
+
+  // ---------- 車款頁分頁：總覽／士倫觀點／完整配備 ----------
+  function showTab(t, scroll) {
+    for (const b of $("mp-tabs").querySelectorAll("button")) b.classList.toggle("on", b.dataset.tab === t);
+    for (const p of $("model-body").querySelectorAll("[data-pane]")) p.hidden = p.dataset.pane !== t;
+    $("model-eq").hidden = t !== "eq";
+    const u = new URL(location.href);
+    if (t === "ov") u.searchParams.delete("tab"); else u.searchParams.set("tab", t);
+    history.replaceState(null, "", u);
+    if (scroll) { const y = $("mp-tabs").getBoundingClientRect().top + scrollY - 4; if (scrollY > y) scrollTo({ top: y }); }
+  }
+  for (const b of $("mp-tabs").querySelectorAll("button")) b.addEventListener("click", () => showTab(b.dataset.tab, true));
 
   // ---------- LINE ----------
   function sendLine() {

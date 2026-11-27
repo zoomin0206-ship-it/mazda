@@ -207,8 +207,10 @@
     $("cmp-head").innerHTML = current.map((t, i) => `<div class="cmp-car">
         <button type="button" class="cmp-x" data-i="${i}" aria-label="移除 ${A.esc(t.車款)}">×</button>
         ${img(t, "cmp-img")}<b>${A.esc(t.車款)}</b><span>${A.esc(t.名稱)}</span>
-        <span class="cmp-price">${A.wan(t.建議售價)}元</span></div>`).join("") +
+        <span class="cmp-price">${A.wan(t.建議售價)}元</span>
+        <button type="button" class="cmp-more" data-model="${A.esc(t.車款id)}">看這台車 →</button></div>`).join("") +
       (canAdd ? `<button type="button" class="cmp-add" id="cmp-add"><b>＋</b><span>加一台</span></button>` : "");
+    for (const b of $("cmp-head").querySelectorAll(".cmp-more")) b.addEventListener("click", () => window.Model.open(b.dataset.model));
     $("cmp-summary").innerHTML = summary().map((p) => `<p>${p}</p>`).join("");
 
     const same = sameModelRows();

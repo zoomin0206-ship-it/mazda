@@ -14,4 +14,5 @@ window.SITE = {
   車款資料: "data/cars.json",
   題目規則: "data/rules.json",
   車款介紹: "data/intro.json",
+  完整配備資料: "data/equipment/",
 };
