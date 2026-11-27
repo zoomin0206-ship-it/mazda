@@ -61,15 +61,23 @@ function render(){
   else{const m=D.摘要[sel],r=D.推薦.includes(sel);S.innerHTML=`<div class="sum"><h3>${esc(D.版本[sel])}｜${esc(D.售價[sel])}${r?`<span class="rec">士倫推薦</span>`:""}</h3><p>${esc(m.開頭)}</p>${m.清單.length?`<ul>${m.清單.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}${r&&D.推薦理由?`<p class="why"><b>為什麼推薦：</b>${esc(D.推薦理由)}</p>`:""}</div>`}
   const vis=D.items.filter(i=>sel<0||i.版本.includes(sel));
   const sc=D.情境.filter(s=>vis.some(i=>i.情境===s));
-  document.getElementById("nav").innerHTML=sc.map((s,k)=>`<button class="chip" onclick="document.getElementById('s${k}').scrollIntoView({behavior:'smooth'})">${esc(s)}</button>`).join("");
+  document.getElementById("nav").innerHTML=sc.map((s,k)=>`<button class="chip" data-k="${k}" onclick="go(${k})">${esc(s)}</button>`).join("");
   document.getElementById("main").innerHTML=sc.map((s,k)=>{const its=vis.filter(i=>i.情境===s),cards=its.filter(i=>i.層級==="卡片"),lines=its.filter(i=>i.層級!=="卡片");
     return `<section class="scene" id="s${k}"><div class="sn">${k+1}／${sc.length}</div><h2>${esc(s)}</h2><p class="hook">${esc(D.開場[s]||"")} 這段有 ${its.length} 項配備。</p>
     ${cards.length?`<div class="sec">重點配備</div>`+cards.map(i=>`<div class="card"><div class="t">${esc(i.標題)}</div>${body(i)}</div>`).join(""):""}
     ${lines.length?`<div class="sec">${cards.length?"其他配備（點一下看說明）":"點一下看說明"}</div>`+lines.map(i=>`<details class="line"><summary>${esc(i.標題)}</summary>${body(i)}</details>`).join(""):""}</section>`}).join("");
+  setTimeout(spy,0);
   document.getElementById("trims").innerHTML=[-1,...D.版本.keys()].map(i=>`<button class="chip${i===sel?" on":""}" onclick="sel=${i};render()">${i<0?"全部版本":esc(D.版本[i])+`<small>${esc(D.售價[i])}</small>`}</button>`).join("");
   const sys={"SBS 智慧防撞":"屬於 SBS 智慧防撞","ELK 緊急車道偏移防止":"屬於 ELK 緊急車道偏移防止"};
   document.getElementById("sys").innerHTML=`<li><b>i-ACTIVSENSE 主動安全科技</b>：Mazda 所有駕駛輔助的總稱<ul>`+Object.entries(sys).map(([n,t])=>`<li>${n}：${D.items.filter(i=>i.標籤===t).map(i=>esc(i.標題)).join("、")||"—"}</li>`).join("")+`</ul></li>`;
 }
+// 跳到情境：反白目前所在的那一段
+let lock=0;
+function mark(k){document.querySelectorAll("#nav .chip").forEach(b=>{const on=+b.dataset.k===k;b.classList.toggle("on",on);if(on)b.scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"})})}
+function go(k){lock=Date.now();mark(k);document.getElementById("s"+k).scrollIntoView({behavior:"smooth"})}
+function spy(){if(Date.now()-lock<800)return;const top=document.querySelector(".bar").getBoundingClientRect().bottom+10;let cur=-1;
+  document.querySelectorAll(".scene").forEach((el,k)=>{if(el.getBoundingClientRect().top<=top)cur=k});mark(cur)}
+addEventListener("scroll",()=>requestAnimationFrame(spy),{passive:true});
 document.getElementById("line").href="https://line.me/R/oaMessage/"+encodeURIComponent(D.LINE)+"/?"+encodeURIComponent("你好，我看了士倫車 Mazda 選車指南的 "+D.車款+" 完整配備說明書，想約時間看車。");
-render();
+render();spy();
 </script></body></html>
