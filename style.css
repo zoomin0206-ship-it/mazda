@@ -4,8 +4,10 @@
   --ink: #1c1c1e;
   --muted: #6b6b70;
   --line: #e4e1dc;
-  --accent: #8e1b2c;
-  --accent-soft: #f6e8ea;
+  --accent: #2f4a63;       /* 主色：按鈕、選取、進度、分頁（深藍＝冷靜、可信任） */
+  --accent-soft: #e8eef4;
+  --brand: #8e1b2c;        /* 點睛：只用在代表士倫本人的地方（品牌名、士倫觀點、士倫推薦） */
+  --brand-soft: #f6e8ea;
   --warn-bg: #fff6e0;
   --warn-ink: #7a5300;
   --ok: #1f6f4a;
@@ -37,7 +39,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .hero { padding: 28px 0 8px; }
 .eyebrow { margin: 0 0 6px; font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: .02em; }
 h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
-.h1-brand { color: var(--accent); }
+.h1-brand { color: var(--brand); }
 .tagline { margin: -4px 0 10px; font-size: 18px; font-weight: 600; }
 @media (max-width: 480px) { .h1-brand { display: block; } .h1-sep { display: none; } }
 .lead { margin: 0 0 28px; color: var(--muted); font-size: 16px; }
@@ -79,7 +81,7 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .route-arrow { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 20px; }
 .route-disabled { opacity: .55; cursor: default; }
 .fineprint { color: var(--muted); font-size: 12px; margin-top: 20px; }
-.error { color: var(--accent); }
+.error { color: var(--warn-ink); }
 
 /* 問答 */
 .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
@@ -290,10 +292,10 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .mp-price span { display: block; font-size: 12px; font-weight: 400; color: var(--muted); }
 .mp-price small { margin-left: 8px; font-size: 13px; font-weight: 400; color: var(--muted); }
 .mp-hero .car-img.big { width: 100%; max-width: 560px; height: auto; aspect-ratio: 900 / 460; object-fit: contain; display: block; margin: 0 auto 8px; }
-.rec-color { text-align: center; margin: 6px 0 0; font-size: 13px; color: var(--accent); }
+.rec-color { text-align: center; margin: 6px 0 0; font-size: 13px; color: var(--brand); }
 .mp-sec { margin: 30px 0 0; }
 .mp-sec h2 { font-size: 20px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
-.mp-sec h2 .by { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 99px; padding: 2px 8px; }
+.mp-sec h2 .by { font-size: 11px; font-weight: 700; color: var(--brand); background: var(--brand-soft); border-radius: 99px; padding: 2px 8px; }
 .two-col { display: grid; gap: 12px; }
 .fit-box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
 .fit-box h3 { margin: 0 0 6px; font-size: 15px; }
@@ -301,10 +303,10 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .fit-box ul { margin: 0; padding-left: 18px; font-size: 14px; }
 .ladder { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 10px; }
 .ld { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
-.ld.rec { border: 2px solid var(--accent); }
+.ld.rec { border: 2px solid var(--brand); }
 .ld-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
 .ld-head b { font-size: 16px; } .ld-head span { font-weight: 700; }
-.ld-head em { font-style: normal; font-size: 12px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 99px; padding: 1px 8px; }
+.ld-head em { font-style: normal; font-size: 12px; font-weight: 700; color: #fff; background: var(--brand); border-radius: 99px; padding: 1px 8px; }
 .ld-sub { margin: 6px 0 2px; font-size: 13px; color: var(--muted); }
 .ld ul { margin: 0; padding-left: 18px; font-size: 14px; }
 .ld li.more { list-style: none; margin-left: -18px; color: var(--muted); }
@@ -446,7 +448,7 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .next .cta-store { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
 
 /* 每一頁最上面的品牌列：點了回首頁（首頁本身不顯示） */
-.brandbar { display: flex; justify-content: space-between; align-items: center; margin: -8px 0 14px; font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none; }
+.brandbar { display: flex; justify-content: space-between; align-items: center; margin: -8px 0 14px; font-size: 13px; font-weight: 700; color: var(--brand); text-decoration: none; }
 .brandbar span { font-size: 12px; font-weight: 400; color: var(--muted); }
 .brandbar[hidden] { display: none; }
 

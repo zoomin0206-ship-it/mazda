@@ -72,7 +72,7 @@
     }
     if (st.screen === "result" && window._last) return show("result", pop);
     if (st.screen === "model" && window.Model) return window.Model.open(st.car, { pop: true, tab: st.tab });
-    if (st.screen === "models" && window.Model) return window.Model.list(pop);
+    if (st.screen === "models" && window.Model) return window.Model.list({ pop, eq: st.eq });
     if ((st.screen === "compare-view" || st.screen === "compare-pick") && window.Compare) return window.Compare.restore(st);
     show("home", pop);
   });

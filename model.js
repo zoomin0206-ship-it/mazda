@@ -15,6 +15,7 @@
     CARS = A.DATA["車款"].filter((c) => c.上架 !== false);
     try { INTRO = await (await fetch(encodeURI(window.SITE.車款介紹))).json(); } catch (e) { INTRO = {}; }
     $("go-models").disabled = false;
+    if (/[?&]list=eq/.test(location.search)) return openList({ eq: true });
     const m = location.search.match(/[?&]car=([^&]+)/);
     if (m && CARS.some((c) => c.id === decodeURIComponent(m[1]))) openModel(decodeURIComponent(m[1]));
   }
@@ -45,15 +46,20 @@
   };
 
   // ---------- 車款列表 ----------
+  // opts.eq：從 LINE 圖文選單「愛車功能介紹」來（網址 ?list=eq），點車款直接打開「完整配備」分頁
   function openList(opts = {}) {
+    if (opts instanceof Event) opts = {};
+    const eq = !!opts.eq;
+    $("models").querySelector(".q-title").textContent = eq ? "你的車是哪一台？" : "你想了解哪一台車？";
+    $("models").querySelector(".topbar-title").textContent = eq ? "愛車功能介紹" : "車款介紹";
     $("model-list").innerHTML = CARS.map((c) => {
       const ts = trimsOf(c.id);
       return `<button type="button" class="model-card" data-car="${esc(c.id)}">
         ${c.圖片 ? `<img src="${esc(c.圖片)}" alt="" loading="lazy">` : ""}
         <b>${esc(c.名稱)}</b><span>${esc(c.車型分類)}</span><span class="mc-price">${priceRange(ts)}</span></button>`;
     }).join("");
-    for (const b of $("model-list").querySelectorAll(".model-card")) b.addEventListener("click", () => openModel(b.dataset.car));
-    A.show("models", { pop: opts.pop, url: location.pathname });
+    for (const b of $("model-list").querySelectorAll(".model-card")) b.addEventListener("click", () => openModel(b.dataset.car, eq ? { tab: "eq" } : {}));
+    A.show("models", { pop: opts.pop, url: location.pathname + (eq ? "?list=eq" : ""), state: { eq } });
   }
 
   // ---------- 車款介紹頁 ----------
