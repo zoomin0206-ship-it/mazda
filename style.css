@@ -924,3 +924,6 @@ summary { list-style: none; }
 .about-name, .h1-brand, .hero .h1-brand, .brandbar, .voice-head b, .mp-sec h2 .by, .rec-color,
 .mp-tabs button[data-tab="view"]:not(.on), .mp-guide button[data-go="view"] b { color: var(--ink, #1e3044) !important; }
 .mp-sec h2 .by { background: var(--accent-soft, #e6edf4); }
+
+/* 著作權聲明（2026-11-28） */
+.copyright { margin: 4px 0 24px; font-size: 12px; line-height: 1.6; color: var(--muted); }

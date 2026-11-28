@@ -36,6 +36,10 @@
       try { INTRO = await (await fetch(encodeURI(S.車款介紹))).json(); } catch (e) { INTRO = {}; }
       window.App.DATA = DATA;
       window.App.RULES = RULES;
+      // 著作權聲明：每一頁的頁尾說明後面加一段（2026-11-28）
+      if (S.著作權聲明) for (const f of document.querySelectorAll(".fineprint")) {
+        const c = document.createElement("p"); c.className = "copyright"; c.textContent = S.著作權聲明; f.after(c);
+      }
       document.dispatchEvent(new Event("app-ready"));
       openShared();
       const n = RULES["題目"].filter((q) => !q.只在).length;
