@@ -487,10 +487,8 @@
   // ---------- LINE ----------
   function summary() {
     const lines = ["你好，我用了士倫車 Mazda 選車指南，結果是："];
-    window._last.forEach((r, i) => {
-      const c = colorOf(r.t);
-      lines.push(`${i + 1}. ${r.t.車款} ${r.t.名稱}${c ? `（${c.名稱}）` : ""}`);
-    });
+    // 不放顏色（士倫 2026-11-28）：預設顯示的顏色不是客戶選的，會誤導；需要時在 LINE 裡再問
+    window._last.forEach((r, i) => lines.push(`${i + 1}. ${r.t.車款} ${r.t.名稱}`));
     lines.push("", "我的情況：");
     for (const q of flow()) {
       const a = answers[q.id];
@@ -538,7 +536,7 @@
 
   // QR Code 用的精簡版訊息（太長的話 QR Code 會太密、不好掃）
   function shortSummary() {
-    const cars = window._last.map((r) => { const c = colorOf(r.t); return `${r.t.車款} ${r.t.名稱}${c ? `（${c.名稱}）` : ""}`; }).join("／");
+    const cars = window._last.map((r) => `${r.t.車款} ${r.t.名稱}`).join("／");
     return `士倫車選車指南推薦：${cars}，想預約賞車`;
   }
 
