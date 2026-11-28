@@ -98,7 +98,8 @@
   // 題目選項：「選項來源」＝車款 時，從上架車款自動產生（例如第 1 題「心裡已經有想看的車嗎？」）
   function qOpts(q) {
     if (q.選項來源 !== "車款") return q.選項;
-    return DATA["車款"].filter((c) => c.上架 !== false).map((c) => ({ id: c.id, 文字: c.名稱 })).concat(q.選項);
+    // 「還沒有」放第一個（士倫 2026-11-28：大部分人還沒決定），車款排在後面
+    return q.選項.concat(DATA["車款"].filter((c) => c.上架 !== false).map((c, i) => ({ id: c.id, 文字: c.名稱, 分隔: i === 0 ? q.車款前的提示 : "" })));
   }
 
   function showQuestion(qid) {
@@ -124,6 +125,7 @@
       b.innerHTML = `<span class="mark" aria-hidden="true"></span><span class="option-text"></span>`;
       b.querySelector(".option-text").textContent = o.文字;
       b.addEventListener("click", () => choose(o.id, b));
+      if (o.分隔) { const h = document.createElement("p"); h.className = "opt-divider"; h.textContent = o.分隔; box.appendChild(h); }
       box.appendChild(b);
     }
     $("next").hidden = !multi;
@@ -134,7 +136,7 @@
     const q = current;
     if (q.類型 === "單選") {
       answers[q.id] = oid;
-      for (const b of $("options").children) b.setAttribute("aria-pressed", "false");
+      for (const b of $("options").querySelectorAll(".option")) b.setAttribute("aria-pressed", "false");
       btn.setAttribute("aria-pressed", "true");
       setTimeout(next, 220);
       return;
@@ -153,7 +155,7 @@
     }
     answers[q.id] = [...sel];
     const ids = qOpts(q).filter(available).map((o) => o.id);
-    [...$("options").children].forEach((b, i) => b.setAttribute("aria-pressed", sel.has(ids[i]) ? "true" : "false"));
+    [...$("options").querySelectorAll(".option")].forEach((b, i) => b.setAttribute("aria-pressed", sel.has(ids[i]) ? "true" : "false"));
     updateNext();
   }
 

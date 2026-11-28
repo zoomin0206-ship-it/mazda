@@ -553,3 +553,5 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .want-h { margin: 0 0 4px; font-size: 15px; }
 .want-why { margin: 0 0 6px; color: var(--muted); }
 .want-note { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+
+.opt-divider { margin: 14px 2px 2px; font-size: 13px; color: var(--muted); }
