@@ -74,7 +74,9 @@
     }
   }
 
-  function recommend(DATA, RULES, ans) {
+  // REC：士倫推薦版本的 id（讀自 車款介紹.json）；分數相近時優先推薦（士倫 2026-11-28）
+  function recommend(DATA, RULES, ans, REC) {
+    REC = new Set(REC || []);
     const rule = RULES["推薦規則"], mech = RULES["機械車位"];
     const trims = loadTrims(DATA, RULES);
     scoreItems(trims, RULES);
@@ -108,6 +110,7 @@
       const out = new Map();
       for (const t of trims) {
         if (t.座位數 < minSeats) continue;
+        if (t.不主動推薦) continue;  // 例如接單生產的版本
         if (useHeight && heightCap && t.全高 > heightCap) continue;
         if (!out.has(t.車款id)) out.set(t.車款id, []);
         out.get(t.車款id).push(t);
@@ -133,7 +136,11 @@
     };
     const choose = (cands) => {
       const best = Math.max(...cands.map(base));
-      return cheapest(cands.filter((t) => base(t) >= best - rule.版本同分範圍));
+      const near = cands.filter((t) => base(t) >= best - rule.版本同分範圍);
+      // 符合條件的版本裡有士倫推薦的、而且沒有貴太多，就推薦它
+      const low = cheapest(near).建議售價;
+      const recs = near.filter((t) => REC.has(t.id) && t.建議售價 <= low + (rule.士倫推薦最多多付 || 0));
+      return cheapest(recs.length ? recs : near);
     };
     const mostFeatures = (cands) => {
       const top = Math.max(...cands.map(nHave));
@@ -179,7 +186,7 @@
         .sort((a, b) => contrib[b] - contrib[a]).slice(0, 3);
       results.push({
         t: pick, 分數: Math.round(score * 100) / 100, 預算: level, 提醒: warn, 原因: reasons,
-        具備: have, 缺少: missing, 所有版本: ts,
+        具備: have, 缺少: missing, 所有版本: ts, 士倫推薦: REC.has(pick.id),
         可升級: top && top !== pick && level === "ok" ? top : null,
       });
     }

@@ -515,3 +515,23 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .cmp-nav button.here { background: #2f4a63; border-color: #2f4a63; color: #fff; }
 .cmp-head.compact .cmp-img, .cmp-head.compact .cmp-more, .cmp-head.compact .cmp-x, .cmp-head.compact .cmp-add { display: none; }
 .cmp-head.compact { padding-top: 6px; padding-bottom: 6px; }
+
+/* 士倫怎麼說（結果頁，2026-11-28）：酒紅只當點睛 */
+.voice { margin: 12px 0 4px; padding: 12px 14px; border-radius: 12px; background: var(--brand-soft, #f6e8ea); border-left: 4px solid var(--brand, #8e1b2c); }
+.voice-head { display: flex; align-items: center; gap: 10px; }
+.voice-head img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.voice-head b { display: block; font-size: 14px; color: var(--brand, #8e1b2c); }
+.voice-head span { font-size: 12px; color: var(--muted); }
+.voice-q { margin: 10px 0 6px; font-size: 16px; font-weight: 700; line-height: 1.5; }
+.voice-sub { margin: 8px 0 2px; font-size: 12px; color: var(--muted); }
+.voice-list { margin: 0; padding-left: 18px; font-size: 14px; }
+.voice-list li { margin: 3px 0; }
+.voice-warn { margin: 8px 0 0; font-size: 14px; }
+.voice-warn b { color: var(--warn-ink); }
+.voice-rec { margin: 10px 0 0; }
+.voice-tag { display: inline-block; font-size: 12px; font-weight: 700; color: #fff; background: var(--brand, #8e1b2c); border-radius: 99px; padding: 2px 10px; }
+.voice-why { margin-top: 6px; font-size: 13px; }
+.voice-why summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+.voice-why p { margin: 6px 0 0; }
+.card-more { margin-top: 10px; font-size: 14px; }
+.card-more > summary { cursor: pointer; color: var(--accent); font-weight: 600; padding: 6px 0; }

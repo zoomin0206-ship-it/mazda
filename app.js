@@ -3,7 +3,7 @@
   "use strict";
   const carType = (x) => (x.endsWith("車") ? x : x + "車"); // 轎車／掀背車／休旅車
   const S = window.SITE;
-  let DATA = null, RULES = null;
+  let DATA = null, RULES = null, INTRO = {};
   let answers = {}, history = [], current = null;
 
   const $ = (id) => document.getElementById(id);
@@ -33,6 +33,7 @@
       // 網頁上的版本名稱：Sedan／Hatchback 改成中文（資料檔維持型錄寫法）
       for (const c of DATA["車款"]) for (const v of c["版本"]) v.名稱 = v.名稱.replace(/^Sedan /, "四門轎車 ").replace(/^Hatchback /, "五門掀背車 ");
       RULES = await r.json();
+      try { INTRO = await (await fetch(encodeURI(S.車款介紹))).json(); } catch (e) { INTRO = {}; }
       window.App.DATA = DATA;
       window.App.RULES = RULES;
       document.dispatchEvent(new Event("app-ready"));
@@ -201,7 +202,7 @@
   const overseas = (t) => t.行李廂來源 && !t.行李廂來源.startsWith("台灣");
 
   function showResult() {
-    const { results, notes, excluded } = window.Engine.recommend(DATA, RULES, answers);
+    const { results, notes, excluded } = window.Engine.recommend(DATA, RULES, answers, recIds());
     $("excluded").hidden = !excluded.length;
     $("excluded").open = true;
     $("excluded-list").innerHTML = excluded.map((x) => `<li><b>${esc(x.車款)}</b>：${esc(x.原因)}</li>`).join("");
@@ -223,6 +224,49 @@
     const carIds = [...new Set(results.map((r) => r.t.車款id))];
     $("res-models").innerHTML = carIds.map((id) => { const r = results.find((x) => x.t.車款id === id); return `<button type="button" class="next-link" data-model="${esc(id)}">看 ${esc(r.t.車款)} →</button>`; }).join("");
     show("result");
+  }
+
+
+  // ---------- 士倫怎麼說（2026-11-28）：依客戶的回答，從士倫觀點挑出相關的句子 ----------
+  const recOf = (carId) => [].concat((INTRO[carId] || {}).推薦版本 || []).filter(Boolean);
+  const recIds = () => Object.keys(INTRO).flatMap(recOf);
+  function voice(r) {
+    const t = r.t, it = INTRO[t.車款id];
+    if (!it || !it.一句話) return "";
+    const map = RULES["士倫觀點對應"] || {};
+    // 「誰會坐」「車位」最切身，關鍵字算三倍
+    const strong = new Set([].concat(answers.who || [], answers.parking || []));
+    const picked = Object.values(answers).flat().filter((x) => typeof x === "string");
+    const kw = new Map();
+    for (const id of picked) for (const k of map[id] || []) kw.set(k, Math.max(kw.get(k) || 0, strong.has(id) ? 3 : 1));
+    // CX-60 這種「2.5：…」「3.3 渦輪：…」開頭的句子，只挑跟推薦版本引擎相符的
+    const engineOk = (x) => { const m = x.match(/^([\d.]+)[^：]*：/); return !m || (t.引擎 || "").startsWith(m[1]); };
+    const hit = (x) => [...kw].reduce((n, [k, w]) => n + (x.includes(k) ? w : 0), 0);
+    const rank = (arr) => (arr || []).filter(engineOk).map((x, i) => [x, hit(x), i]).filter((a) => a[1] > 0).sort((a, b) => b[1] - a[1] || a[2] - b[2]).map((a) => a[0]);
+    let good = rank(it.適合).slice(0, 2);
+    if (!good.length && it.適合 && it.適合.length) good = [it.適合.filter(engineOk)[0] || it.適合[0]];
+    const bad = rank(it.不適合).slice(0, 1);
+    const recs = recOf(t.車款id);
+    let ver = "";
+    if (r.士倫推薦) ver = `<p class="voice-rec"><span class="voice-tag">士倫推薦版本</span></p>${it.推薦理由 ? `<details class="voice-why"><summary>為什麼推薦這個版本</summary><p>${esc(it.推薦理由)}</p></details>` : ""}`;
+    else if (recs.length) {
+      // 士倫推薦版本也要有客戶需要的配備（例如要四驅，就不提後驅的版本）
+      const okFor = (x) => recs.includes(x.id) && r.具備.every((k) => x.關鍵配備[k]) && x.座位數 >= t.座位數 - 1;
+      const rt = (r.所有版本 || []).find((x) => okFor(x) && x.車身類型 === t.車身類型) || (r.所有版本 || []).find(okFor);
+      // 比推薦的版本貴超過「士倫推薦最多多付」（20 萬）就不提：多半是給不同需求的人（例如 CX-60 3.3 是給想要大馬力的人）
+      const maxMore = RULES["推薦規則"].士倫推薦最多多付 || Infinity;
+      if (rt && rt.id !== t.id && rt.建議售價 - t.建議售價 <= maxMore) {
+        const d = rt.建議售價 - t.建議售價;
+        ver = `<details class="voice-why"><summary>士倫最常推薦的是 ${esc(rt.名稱)}（${d > 0 ? "多" : "少"} ${wan(Math.abs(d))}元）</summary><p>${esc(it.推薦理由 || "")}</p></details>`;
+      }
+    }
+    return `<div class="voice">
+        <div class="voice-head"><img src="img/brand/headshot.jpg" alt="" width="40" height="40"><div><b>士倫怎麼說</b><span>${esc(S.顧問職稱)} ${esc(S.顧問名稱)}</span></div></div>
+        <p class="voice-q">「${esc(it.一句話)}」</p>
+        ${good.length ? `<p class="voice-sub">跟你的情況有關</p><ul class="voice-list">${good.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+        ${bad.length ? `<p class="voice-warn"><b>也要先跟你說：</b>${esc(bad[0])}</p>` : ""}
+        ${ver}
+      </div>`;
   }
 
   // 配備差異：b 比 a 多了哪些（依「配備對照清單」，也看驅動方式）
@@ -273,9 +317,11 @@
         <h3 class="car">${esc(t.車款)}</h3>
         <p class="trim">${esc(t.名稱)}<span class="type">${esc(typeLabel(t))}</span></p>
         <p class="price"><span>建議售價</span>${wan(t.建議售價)}元</p>
+        ${voice(r)}
         ${reasons.length ? `<p class="sub">為什麼適合你</p><ul class="reasons">${reasons.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
         ${r.具備.length ? `<p class="sub">你需要的配備，這個版本都有</p><p class="chips">${r.具備.map((k) => `<span class="chip">${esc(fname(k))}</span>`).join("")}</p>` : ""}
         ${warn.length ? `<ul class="warns">${warn.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+        <details class="card-more"><summary>規格、每年養車費用${r.可升級 ? "、升級選擇" : ""}</summary>
         <dl class="specs">
           <div><dt>座位</dt><dd>${t.座位數} 人</dd></div>
           <div><dt>車長</dt><dd>${fmt(t.全長)} mm</dd></div>
@@ -284,8 +330,9 @@
           <div><dt>驅動</dt><dd>${t.驅動.includes("四輪") ? "四輪驅動" : t.驅動.includes("後輪") ? "後輪驅動" : "前輪驅動"}</dd></div>
           <div><dt>每年養車約</dt><dd>${wan(Math.round(t.每年養車成本 / 1000) * 1000)}</dd></div>
         </dl>
-        ${i > 0 && firstR ? `<div class="versus"><b>和第一推薦（${esc(firstR.t.車款)} ${esc(firstR.t.名稱)}）比</b><dl>${versusFirst(t, firstR.t).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></div>` : ""}
         ${r.可升級 ? upgradeText(r) : ""}
+        </details>
+        ${i > 0 && firstR ? `<div class="versus"><b>和第一推薦（${esc(firstR.t.車款)} ${esc(firstR.t.名稱)}）比</b><dl>${versusFirst(t, firstR.t).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl></div>` : ""}
         <button type="button" class="more-link" data-model="${esc(t.車款id)}">看 ${esc(t.車款)} 完整介紹 →</button>
       </article>`;
   }
