@@ -84,12 +84,13 @@
 
     const chosen = ans.who.map((x) => o("who", x)).concat([o("parking", ans.parking)]);
     ans.use.forEach((x) => chosen.push(o("use", x)));
-    chosen.push(o("pain", ans.pain), o("cost", ans.cost));
+    chosen.push(o("pain", ans.pain));
+    (ans.life || []).forEach((x) => chosen.push(o("life", x)));  // 第 7 題：有的選項是配備、有的是加權（例如「開車是一種享受」）
     const weights = {};
     for (const c of chosen) for (const [k, w] of Object.entries(c.加權 || {})) weights[k] = (weights[k] || 0) + w;
     const minSeats = Math.max(...chosen.map((c) => c.最少座位 || 0));
     const minTrunk = Math.max(...chosen.map((c) => c.後車廂至少 || 0));
-    const wanted = (ans.life || []).map((x) => o("life", x).配備);
+    const wanted = [];
     for (const c of chosen) if (c.配備 && !wanted.includes(c.配備)) wanted.push(c.配備);
     const bodies = new Set(ans.body.map((x) => o("body", x).車身類型).filter((b) => b));
     const budget = o("budget", ans.budget).上限;
@@ -140,7 +141,9 @@
       // 符合條件的版本裡有士倫推薦的、而且沒有貴太多，就推薦它
       const low = cheapest(near).建議售價;
       const recs = near.filter((t) => REC.has(t.id) && t.建議售價 <= low + (rule.士倫推薦最多多付 || 0));
-      return cheapest(recs.length ? recs : near);
+      const pool = recs.length ? recs : near;
+      const lowP = cheapest(pool).建議售價;  // 同價的版本（例如四門、五門 Signature）選分數高的
+      return pool.filter((t) => t.建議售價 === lowP).reduce((a, b) => (base(b) > base(a) ? b : a));
     };
     const mostFeatures = (cands) => {
       const top = Math.max(...cands.map(nHave));
@@ -158,7 +161,7 @@
       else if (fullNear.length) [pick, level] = [choose(fullNear), "stretch"];
       else if (inB.length) [pick, level] = [mostFeatures(inB), "ok"];
       else if (near.length) [pick, level] = [mostFeatures(near), "stretch"];
-      else [pick, level] = [cheapest(ts), "over"];
+      else { const lp = cheapest(ts).建議售價; [pick, level] = [ts.filter((t) => t.建議售價 === lp).reduce((a, b) => (base(b) > base(a) ? b : a)), "over"]; }
       const missing = wanted.filter((m) => !pick.關鍵配備[m]);
       const have = wanted.filter((m) => pick.關鍵配備[m]);
 
@@ -181,7 +184,8 @@
       if (pick.座位數 === 2) warn.push("只有 2 個座位");
       if (extra) warn.push(`${pick.座位數} 人座，你可能用不到這麼大的空間`);
       if (tooTall) warn.push(`車高 ${pick.全高.toLocaleString()} mm，超過車位限高`);
-      const top = inB.length ? inB.reduce((a, b) => (b.建議售價 > a.建議售價 ? b : a)) : null;
+      const sameBody = inB.filter((t) => t.車身類型 === pick.車身類型);  // 升級建議只看同一種車身（Mazda3 五門不會建議升級到四門）
+      const top = sameBody.length ? sameBody.reduce((a, b) => (b.建議售價 > a.建議售價 ? b : a)) : null;
       const reasons = Object.keys(contrib).filter((k) => contrib[k] > 0.3)
         .sort((a, b) => contrib[b] - contrib[a]).slice(0, 3);
       results.push({
@@ -214,7 +218,7 @@
       const r = results.find((x) => x.t.車款id === id);
       const maxSeat = Math.max(...ts.map((t) => t.座位數));
       const minH = Math.min(...ts.map((t) => t.全高));
-      const minP = Math.min(...ts.map((t) => t.建議售價));
+      const minP = Math.min(...(ts.some((t) => !t.不主動推薦) ? ts.filter((t) => !t.不主動推薦) : ts).map((t) => t.建議售價));  // 不主動推薦的版本（例如接單生產）不拿來說「最便宜」
       let why;
       if (maxSeat < minSeats) why = `只有 ${maxSeat} 個座位，坐不下你需要的人數`;
       else if (heightCap && !tooTall && minH > heightCap) why = `車高 ${minH.toLocaleString()} mm，停不進限高 ${heightCap.toLocaleString()} mm 的機械車位`;

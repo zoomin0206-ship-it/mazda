@@ -95,6 +95,12 @@
     show("quiz", { state: { q: q0 } });
   }
 
+  // 題目選項：「選項來源」＝車款 時，從上架車款自動產生（例如第 1 題「心裡已經有想看的車嗎？」）
+  function qOpts(q) {
+    if (q.選項來源 !== "車款") return q.選項;
+    return DATA["車款"].filter((c) => c.上架 !== false).map((c) => ({ id: c.id, 文字: c.名稱 })).concat(q.選項);
+  }
+
   function showQuestion(qid) {
     current = RULES["題目"].find((q) => q.id === qid);
     // 進度只算主要題目；追問題（例如機械車位限高）沿用上一題的題號
@@ -110,7 +116,7 @@
     box.innerHTML = "";
     box.setAttribute("role", multi ? "group" : "radiogroup");
     const sel = new Set([].concat(answers[qid] || []));
-    for (const o of current.選項.filter(available)) {
+    for (const o of qOpts(current).filter(available)) {
       const b = document.createElement("button");
       b.className = "option" + (multi ? " multi" : "");
       b.type = "button";
@@ -146,7 +152,7 @@
       sel.add(oid);
     }
     answers[q.id] = [...sel];
-    const ids = q.選項.filter(available).map((o) => o.id);
+    const ids = qOpts(q).filter(available).map((o) => o.id);
     [...$("options").children].forEach((b, i) => b.setAttribute("aria-pressed", sel.has(ids[i]) ? "true" : "false"));
     updateNext();
   }
@@ -211,6 +217,8 @@
     $("result-title").textContent = results.length > 1 ? "最適合你的兩款車" : "最適合你的車";
     $("result-notes").innerHTML = notes.map((n) => `<p class="note">${esc(n)}</p>`).join("");
     $("cards").innerHTML = results.map((r, i) => card(r, i, results.length, results[0])).join("");
+    $("want-box").innerHTML = wantBox(results, excluded);
+    $("want-box").hidden = !$("want-box").innerHTML;
     $("cta-lead").textContent = T.結尾;
     $("cta-store").textContent = `${S.展間}（${S.展間地區}）｜${S.顧問職稱} ${S.顧問名稱}`;
     renderExtra();
@@ -278,6 +286,25 @@
       answers = a; shared = true; showResult();
       return true;
     } catch (e) { return false; }
+  }
+
+
+  // ---------- 客戶原本想看的車（第 1 題，2026-11-28）：有推薦就說眼光不錯，沒推薦就說明原因、可以一鍵比較 ----------
+  function wantBox(results, excluded) {
+    const w = answers.want;
+    if (!w || w === "none") return "";
+    const car = DATA["車款"].find((c) => c.id === w);
+    if (!car) return "";
+    if (results.some((r) => r.t.車款id === w)) return `<p class="want-yes">👍 你原本想看的 <b>${esc(car.名稱)}</b> 也在推薦裡，眼光不錯！</p>`;
+    const why = (excluded.find((x) => x.車款id === w) || {}).原因;
+    const recs = recOf(w);
+    const ts = window.Engine.loadTrims(DATA, RULES).filter((t) => t.車款id === w && !t.不主動推薦);
+    const t = ts.find((x) => recs.includes(x.id)) || ts.sort((a, b) => a.建議售價 - b.建議售價)[0];
+    window._wantCompare = t && results[0] ? [results[0].t.id, t.id] : null;
+    return `<p class="want-h">你原本想看的 <b>${esc(car.名稱)}</b>，這次沒有排進推薦</p>` +
+      (why ? `<p class="want-why">原因：${esc(why)}</p>` : "") +
+      (window._wantCompare ? `<button type="button" class="next-link" id="want-compare">把 ${esc(car.名稱)} 和 ${esc(results[0].t.車款)} 放在一起比較 →</button>` : "") +
+      `<p class="want-note">這只是依你回答的條件排序。如果你特別喜歡 ${esc(car.名稱)}，很歡迎來看實車，我幫你一起評估。</p>`;
   }
 
   // ---------- 士倫怎麼說（2026-11-28）：依客戶的回答，從士倫觀點挑出相關的句子 ----------
@@ -362,7 +389,7 @@
     const hc = heightCap();
     if (hc && t.全高 <= hc) reasons.unshift(`車高 ${fmt(t.全高)} mm，停得進限高 ${fmt(hc)} mm 的機械車位`);
     const warn = r.提醒.filter((w) => !w.startsWith("缺少")).concat(r.缺少.length ? [`這個版本沒有：${r.缺少.map(fname).join("、")}`] : []);
-    const badge = n === 1 ? "最推薦" : i === 0 ? "第一推薦" : "第二推薦";
+    const badge = (n === 1 ? "最推薦" : i === 0 ? "第一推薦" : "第二推薦") + (answers.want === t.車款id ? "・你原本想看的車" : "");
     return `
       <article class="card${i === 0 ? " top" : ""}">
         <p class="badge">${badge}</p>
@@ -468,7 +495,7 @@
     for (const q of flow()) {
       const a = answers[q.id];
       if (a === undefined || (Array.isArray(a) && !a.length)) continue;
-      const text = [].concat(a).map((id) => q.選項.find((o) => o.id === id).文字).join("、");
+      const text = [].concat(a).map((id) => qOpts(q).find((o) => o.id === id).文字).join("、");
       lines.push(`・${q.題目.replace(/？$/, "")}：${text}`);
     }
     const X = RULES["結果後小問題"];
@@ -563,6 +590,7 @@
   $("brandbar").addEventListener("click", (e) => { e.preventDefault(); goHome(); });
   $("send-line").addEventListener("click", sendLine);
   $("extra-q").addEventListener("click", onExtra);
+  $("want-box").addEventListener("click", (e) => { if (e.target.closest("#want-compare") && window._wantCompare) window.Compare.open(window._wantCompare); });
   $("shared-quiz").addEventListener("click", startQuiz);
   document.addEventListener("click", onSwatch);  // 結果頁、車款介紹頁的色點都適用
   $("cards").addEventListener("click", (e) => { const b = e.target.closest(".more-link"); if (b) window.Model.open(b.dataset.model); });
