@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <base href="../../">
+  <meta name="robots" content="noindex">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>士倫車｜Mazda 選車指南｜1 分鐘，找出最適合你的 Mazda</title>
+  <meta name="description" content="回答幾個生活小問題，幫你從 Mazda 全車系中找出最適合的車款和版本。">
+  <meta property="og:title" content="士倫車｜Mazda 選車指南｜1 分鐘，找出最適合你的 Mazda">
+  <meta property="og:description" content="不懂規格也沒關係。回答幾個生活小問題，幫你從 Mazda 全車系找出最適合的車款和版本。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://zoomin0206-ship-it.github.io/mazda/">
+  <meta property="og:image" content="https://zoomin0206-ship-it.github.io/mazda/img/brand/share.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="zh_TW">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#2f4a63">
+  <link rel="icon" type="image/svg+xml" href="img/brand/logo.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png">
+  <link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&display=swap">
+  <link rel="stylesheet" href="preview/navy-gold/style.css?v=704816e6">
+</head>
+<body>
+  <div class="app" id="app">
+    <a class="brandbar" id="brandbar" href="./" hidden>士倫車｜Mazda 選車指南<span>回首頁</span></a>
+    <!-- 首頁 -->
+    <section class="screen" id="home">
+      <header class="hero">
+        <p class="eyebrow" id="advisor-line"></p>
+        <h1><span class="h1-brand">士倫車</span><span class="h1-sep">｜</span>Mazda 選車指南</h1>
+        <p class="tagline">1 分鐘，找出最適合你的 Mazda</p>
+        <p class="lead">不懂規格也沒關係，回答幾個生活小問題就好。</p>
+        <ul class="gets">
+          <li>最適合你的車款和建議版本</li>
+          <li>為什麼適合你：停車、空間、預算一次看懂</li>
+          <li>每年稅金＋油錢估算，沒推薦的車也告訴你原因</li>
+        </ul>
+      </header>
+      <p class="question-label">你現在在哪個階段？</p>
+      <button class="route" id="go-quiz">
+        <span class="route-title">我還不知道選哪台</span>
+        <span class="route-desc" id="quiz-desc">回答幾個問題，約 1 分鐘，幫你縮小到最適合的車款</span>
+        <span class="route-arrow" aria-hidden="true">→</span>
+      </button>
+      <button class="route" id="go-compare" disabled>
+        <span class="route-title">我在兩、三台之間猶豫</span>
+        <span class="route-desc">選兩台車，直接告訴你差多少錢、多了什麼</span>
+        <span class="route-arrow" aria-hidden="true">→</span>
+      </button>
+      <button class="route" id="go-models" disabled>
+        <span class="route-title">我想深入了解某一台車</span>
+        <span class="route-desc">士倫觀點、版本怎麼選、每個配備怎麼用，都在這台車的頁面</span>
+        <span class="route-arrow" aria-hidden="true">→</span>
+      </button>
+      <section class="about" aria-labelledby="about-title">
+        <div class="about-head">
+          <div class="avatar" id="about-avatar" aria-hidden="true"></div>
+          <div><p class="about-name" id="about-name"></p><p class="about-role" id="about-role"></p></div>
+        </div>
+        <h2 class="about-title" id="about-title"></h2>
+        <p class="about-text" id="about-text"></p>
+      </section>
+      <p class="fineprint">所有車款資料來自台灣馬自達官方型錄與車主手冊，車款改款時會同步更新。<br>本網站由 Mazda 銷售專員個人製作，非台灣馬自達官方網站。</p>
+    </section>
+
+    <!-- 問答 -->
+    <section class="screen" id="quiz" hidden>
+      <div class="topbar">
+        <button class="back" id="back" aria-label="上一題">←</button>
+        <div class="progress" aria-hidden="true"><div class="progress-bar" id="progress-bar"></div></div>
+        <span class="step" id="step"></span>
+      </div>
+      <h2 class="q-title" id="q-title"></h2>
+      <p class="q-sub" id="q-sub"></p>
+      <div class="options" id="options"></div>
+      <div class="bottom">
+        <button class="primary" id="next" disabled>下一題</button>
+      </div>
+    </section>
+
+    <!-- 結果 -->
+    <section class="screen" id="result" hidden>
+      <div class="topbar">
+        <button class="back" id="result-back" aria-label="修改答案">←</button>
+        <span class="topbar-title">修改答案</span>
+      </div>
+      <header class="result-head">
+        <p class="eyebrow">你的選車結果</p>
+        <h2 id="result-title"></h2>
+      </header>
+      <div class="shared-banner" id="shared-banner" hidden><span id="shared-text"></span><button type="button" class="next-link" id="shared-quiz"></button></div>
+      <div id="result-notes"></div>
+      <div class="want-box" id="want-box" hidden></div>
+      <div class="cards" id="cards"></div>
+      <details class="excluded" id="excluded" hidden>
+        <summary>其他車款為什麼沒有推薦？</summary>
+        <ul id="excluded-list"></ul>
+      </details>
+      <section class="next" aria-labelledby="res-next-title">
+        <h2 id="res-next-title">看完了，下一步？</h2>
+        <div class="next-step main">
+          <p class="next-h">🚗 <span id="cta-lead">想親自看看？</span></p>
+          <p class="next-t">把結果傳給我，幫你確認版本、配備。不管是先看看實車，還是想實際開開看，我都可以幫你安排。</p>
+          <div class="extra-q" id="extra-q"></div>
+          <button class="primary line" id="send-line">把結果傳到 LINE，預約賞車試乘</button>
+          <p class="cta-store" id="cta-store"></p>
+        </div>
+        <div class="next-step" id="compare-these-box" hidden>
+          <p class="next-h">🤔 這兩台差在哪？</p>
+          <button class="next-link" id="compare-these">放在一起詳細比較 →</button>
+        </div>
+        <div class="next-step">
+          <p class="next-h">🔍 想深入了解其中一台</p>
+          <div class="next-links" id="res-models"></div>
+        </div>
+        <div class="next-step">
+          <p class="next-h">↺ 想換個條件</p>
+          <button class="next-link" id="restart">重新選一次 →</button>
+        </div>
+      </section>
+      <p class="fineprint" id="disclaimer"></p>
+    </section>
+
+    <!-- 我要比較：選車 -->
+    <section class="screen" id="compare-pick" hidden>
+      <div class="topbar">
+        <button class="back" id="pick-back" aria-label="回首頁">←</button>
+        <span class="topbar-title">我要比較</span>
+      </div>
+      <h2 class="q-title">選擇要比較的車</h2>
+      <p class="q-sub">可以比較不同車款，也可以比較同一款車的不同版本</p>
+      <div id="slots" class="slots"></div>
+      <div class="bottom tray-wrap">
+        <p class="tray-title">候選名單</p>
+        <div class="tray" id="pick-tray"></div>
+        <button class="primary" id="do-compare" disabled>再選 2 台就可以比較</button>
+      </div>
+    </section>
+
+    <!-- 我要比較：結果 -->
+    <section class="screen" id="compare-view" hidden>
+      <div class="topbar">
+        <button class="back" id="view-back" aria-label="換車比較">←</button>
+        <span class="topbar-title">比較結果</span>
+      </div>
+      <div class="cmp-head" id="cmp-head"></div>
+      <div class="cmp-summary" id="cmp-summary"></div>
+      <label class="switch"><input type="checkbox" id="only-diff" checked><span>只顯示不一樣的地方</span></label>
+      <nav class="cmp-nav" id="cmp-nav" aria-label="跳到分類"></nav>
+      <div id="cmp-table"></div>
+      <section class="next" aria-labelledby="cmp-next-title">
+        <h2 id="cmp-next-title">看完了，下一步？</h2>
+        <div class="next-step main">
+          <p class="next-h">🚗 <span id="cmp-cta-lead">兩台都想試試看？</span></p>
+          <p class="next-t">把比較結果傳給我，幫你安排同一天賞車試乘。不管是先看看實車，還是想實際開開看，比過一次就知道哪台適合你。</p>
+          <button class="primary line" id="cmp-line">把比較結果傳到 LINE，預約賞車試乘</button>
+        </div>
+        <div class="next-step">
+          <p class="next-h">🔍 想深入了解其中一台</p>
+          <div class="next-links" id="cmp-models"></div>
+        </div>
+        <div class="next-step">
+          <p class="next-h">❓ 還是不確定</p>
+          <button class="next-link" id="cmp-quiz">用 8 個問題確認 →</button>
+        </div>
+      </section>
+      <p class="fineprint" id="cmp-foot"></p>
+    </section>
+
+    <!-- 車款列表 -->
+    <section class="screen" id="models" hidden>
+      <div class="topbar">
+        <button class="back" id="models-back" aria-label="回首頁">←</button>
+        <span class="topbar-title">車款介紹</span>
+      </div>
+      <h2 class="q-title">你想了解哪一台車？</h2>
+      <div class="model-grid" id="model-list"></div>
+      <button class="next-link" id="models-quiz" style="margin-top:18px">還不確定要看哪台？用 8 個問題幫你挑 →</button>
+    </section>
+
+    <!-- 單一車款介紹 -->
+    <section class="screen" id="model" hidden>
+      <div class="topbar">
+        <button class="back" id="model-back" aria-label="回車款列表">←</button>
+        <span class="topbar-title" id="model-title">車款介紹</span>
+      </div>
+      <nav class="mp-tabs" id="mp-tabs" aria-label="車款頁分頁">
+        <button type="button" data-tab="ov" class="on">總覽</button>
+        <button type="button" data-tab="view">士倫觀點</button>
+        <button type="button" data-tab="eq">完整配備</button>
+      </nav>
+      <div id="model-body"></div>
+      <div id="model-eq" class="eq" hidden></div>
+      <section class="next" aria-labelledby="next-title">
+        <h2 id="next-title">看完了，下一步？</h2>
+        <div class="next-step main">
+          <p class="next-h">🚗 <span id="model-cta-lead">想親自坐坐看？</span></p>
+          <p class="next-t">傳 LINE 給我，幫你安排賞車、試乘，也可以問我任何關於這台車的問題。</p>
+          <button class="primary line" id="model-line">傳 LINE 預約賞車試乘</button>
+        </div>
+        <div class="next-step" id="model-rivals-box">
+          <p class="next-h">🤔 還在跟其他車比較</p>
+          <div id="model-rivals"></div>
+        </div>
+        <div class="next-step">
+          <p class="next-h">❓ 不確定這台適不適合你</p>
+          <button class="next-link" id="model-quiz">用 8 個問題確認 →</button>
+        </div>
+      </section>
+      <p class="fineprint" id="model-foot"></p>
+    </section>
+  </div>
+
+  <div class="modal" id="qr-modal" hidden role="dialog" aria-modal="true" aria-labelledby="qr-title">
+    <div class="modal-box">
+      <button class="modal-close" id="qr-close" aria-label="關閉">×</button>
+      <h3 id="qr-title">用手機掃描，把結果傳給我</h3>
+      <p class="modal-text">打開手機相機或 LINE 掃描下方 QR Code，會自動開啟 LINE 並帶入你的選車結果，按「傳送」就完成了。</p>
+      <div class="qr" id="qr"></div>
+      <p class="modal-text small" id="qr-copied"></p>
+      <a class="primary line direct" id="qr-direct" href="#">我正在用手機，直接開啟 LINE</a>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="vendor/qrcode.js?v=6e6189e2"></script>
+  <script src="config.js?v=4af92c96"></script>
+  <script src="engine.js?v=ac8456b9"></script>
+  <script src="app.js?v=e14735d1"></script>
+  <script src="compare.js?v=4beb890b"></script>
+  <script src="equip.js?v=c4e85f7e"></script>
+  <script src="model.js?v=2d73c110"></script>
+</body>
+</html>
