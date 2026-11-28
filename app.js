@@ -217,7 +217,7 @@
     $("excluded-list").innerHTML = excluded.map((x) => `<li><b>${esc(x.車款)}</b>：${esc(x.原因)}</li>`).join("");
     const T = RULES["結果頁文字"];
     $("result-title").textContent = results.length > 1 ? "最適合你的兩款車" : "最適合你的車";
-    $("result-notes").innerHTML = notes.map((n) => `<p class="note">${esc(n)}</p>`).join("");
+    $("result-notes").innerHTML = notes.map((n) => `<p class="note">${esc(n)}</p>`).join("") + bodyNote(results);
     $("cards").innerHTML = results.map((r, i) => card(r, i, results.length, results[0])).join("");
     $("want-box").innerHTML = wantBox(results, excluded);
     $("want-box").hidden = !$("want-box").innerHTML;
@@ -290,6 +290,22 @@
     } catch (e) { return false; }
   }
 
+
+
+  // ---------- 推薦的車型跟客戶選的不一樣時，說明原因（2026-11-28 網站驗證） ----------
+  function bodyNote(results) {
+    const X = RULES["車型不符說明"];
+    if (!X || !results.length) return "";
+    const want = new Set((answers.body || []).map((x) => (RULES["題目"].find((q) => q.id === "body").選項.find((o) => o.id === x) || {}).車身類型).filter(Boolean));
+    const t = results[0].t;
+    if (!want.size || want.has(t.車身類型)) return "";
+    const picked = [].concat(answers.who || [], answers.use || []);
+    const why = Object.entries(X.原因).filter(([k]) => picked.includes(k)).map(([, v]) => v);
+    if (!why.length) return "";
+    const name = [...want].map((b) => ({ 轎車: "轎車", 掀背: "掀背車", 休旅: "休旅車" }[b] || b)).join("或");
+    const rec = { 轎車: "轎車", 掀背: "掀背車", 休旅: "休旅車" }[t.車身類型] || t.車身類型;
+    return `<div class="note body-note"><p>${esc(X.開頭.replace("{選的車型}", name).replace("{推薦車型}", rec))}</p><ul>${why.map((w) => `<li>${esc(w)}</li>`).join("")}</ul><p>${esc(X.結尾.replace("{選的車型}", name))}</p></div>`;
+  }
 
   // ---------- 客戶原本想看的車（第 1 題，2026-11-28）：有推薦就說眼光不錯，沒推薦就說明原因、可以一鍵比較 ----------
   function wantBox(results, excluded) {
