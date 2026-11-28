@@ -12,7 +12,7 @@
   <link rel="icon" type="image/svg+xml" href="img/brand/logo.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png">
   <link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=32b0708c">
+  <link rel="stylesheet" href="style.css?v=138f9c19">
 </head>
 <body>
   <div class="app" id="app">
@@ -82,6 +82,7 @@
         <p class="eyebrow">你的選車結果</p>
         <h2 id="result-title"></h2>
       </header>
+      <div class="shared-banner" id="shared-banner" hidden><span id="shared-text"></span><button type="button" class="next-link" id="shared-quiz"></button></div>
       <div id="result-notes"></div>
       <div class="cards" id="cards"></div>
       <details class="excluded" id="excluded" hidden>
@@ -93,6 +94,7 @@
         <div class="next-step main">
           <p class="next-h">🚗 <span id="cta-lead">想親自看看？</span></p>
           <p class="next-t">把結果傳給我，幫你確認版本、配備。不管是先看看實車，還是想實際開開看，我都可以幫你安排。</p>
+          <div class="extra-q" id="extra-q"></div>
           <button class="primary line" id="send-line">把結果傳到 LINE，預約賞車試乘</button>
           <p class="cta-store" id="cta-store"></p>
         </div>
@@ -216,9 +218,9 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="vendor/qrcode.js?v=6e6189e2"></script>
-  <script src="config.js?v=199239fa"></script>
+  <script src="config.js?v=0ef3c3e3"></script>
   <script src="engine.js?v=10b097e1"></script>
-  <script src="app.js?v=2f54e5b5"></script>
+  <script src="app.js?v=9d971f26"></script>
   <script src="compare.js?v=485b716d"></script>
   <script src="equip.js?v=c4e85f7e"></script>
   <script src="model.js?v=2d73c110"></script>

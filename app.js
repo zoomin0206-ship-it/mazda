@@ -4,7 +4,7 @@
   const carType = (x) => (x.endsWith("車") ? x : x + "車"); // 轎車／掀背車／休旅車
   const S = window.SITE;
   let DATA = null, RULES = null, INTRO = {};
-  let answers = {}, history = [], current = null;
+  let answers = {}, history = [], current = null, extra = {}, shared = false;
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => Number(n).toLocaleString("zh-TW");
@@ -37,6 +37,7 @@
       window.App.DATA = DATA;
       window.App.RULES = RULES;
       document.dispatchEvent(new Event("app-ready"));
+      openShared();
       const n = RULES["題目"].filter((q) => !q.只在).length;
       $("quiz-desc").textContent = `回答 ${n} 個問題，約 1 分鐘，幫你縮小到最適合的車款`;
     } catch (e) {
@@ -88,7 +89,7 @@
   }
 
   function startQuiz() {
-    answers = {}; history = [];
+    answers = {}; history = []; extra = {}; shared = false;
     const q0 = flow()[0].id;
     showQuestion(q0);
     show("quiz", { state: { q: q0 } });
@@ -212,6 +213,11 @@
     $("cards").innerHTML = results.map((r, i) => card(r, i, results.length, results[0])).join("");
     $("cta-lead").textContent = T.結尾;
     $("cta-store").textContent = `${S.展間}（${S.展間地區}）｜${S.顧問職稱} ${S.顧問名稱}`;
+    renderExtra();
+    const SH = RULES["結果頁文字"].分享 || {};
+    $("shared-banner").hidden = !shared;
+    $("shared-text").textContent = SH.收到的提示 || "";
+    $("shared-quiz").textContent = SH.收到的按鈕 || "我也來測一次 →";
     $("send-line").textContent = S.LINE帳號 ? "把結果傳到 LINE，預約賞車試乘" : "把結果傳到 LINE（帳號設定中）";
     const p = RULES["計算參數"];
     $("disclaimer").textContent =
@@ -226,6 +232,53 @@
     show("result");
   }
 
+
+
+  // ---------- 結果後的小問題（2026-11-28）：可以跳過，答案只帶進 LINE 訊息 ----------
+  function renderExtra() {
+    const X = RULES["結果後小問題"];
+    if (!X) return;
+    const skip = (q) => q.略過條件 && (() => { const [k, v] = q.略過條件.split("="); return [].concat(answers[k] || []).includes(v); })();
+    $("extra-q").innerHTML = `<p class="extra-h">${esc(X.標題)}<span>${esc(X.副標)}</span></p>` +
+      X.題目.filter((q) => !skip(q)).map((q) => `<p class="extra-l">${esc(q.題目)}</p><div class="extra-opts">${q.選項.map((o) =>
+        `<button type="button" class="extra-opt" data-q="${esc(q.id)}" data-v="${esc(o)}" aria-pressed="${extra[q.id] === o}">${esc(o)}</button>`).join("")}</div>`).join("");
+  }
+  function onExtra(e) {
+    const b = e.target.closest(".extra-opt");
+    if (!b) return;
+    extra[b.dataset.q] = extra[b.dataset.q] === b.dataset.v ? undefined : b.dataset.v;  // 再點一次取消
+    renderExtra();
+  }
+
+  // ---------- 結果連結：把回答放進網址，打開就是同一份結果 ----------
+  // 2026-11-28 士倫：不放「傳給家人一起看」按鈕（等於提醒客戶「回去跟家人討論」，會影響漏斗）。
+  // 下面 shareFamily 目前沒有按鈕會呼叫；openShared 保留，之後士倫可以在 LINE 附上客戶的結果連結
+  const encAns = (a) => btoa(unescape(encodeURIComponent(JSON.stringify(a)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const decAns = (x) => JSON.parse(decodeURIComponent(escape(atob(x.replace(/-/g, "+").replace(/_/g, "/")))));
+  async function shareFamily() {
+    const T = RULES["結果頁文字"].分享;
+    const url = `${location.origin}${location.pathname}?ans=${encAns(answers)}`;
+    const cars = (window._last || []).map((r) => r.t.車款).join("、");
+    const text = T.分享文字.replace("{車款}", cars);
+    if (navigator.share) {
+      try { await navigator.share({ title: "士倫車｜Mazda 選車指南", text, url }); return; } catch (e) { if (e && e.name === "AbortError") return; }
+    }
+    if (isMobile()) { window.location.href = "https://line.me/R/share?text=" + encodeURIComponent(text + "\n" + url); return; }
+    try { await navigator.clipboard.writeText(text + "\n" + url); toast("連結已複製，貼到 LINE 傳給家人就可以了"); }
+    catch (e) { prompt("複製這個連結傳給家人：", url); }
+  }
+  // 打開家人傳來的連結：直接顯示同一份結果
+  function openShared() {
+    const m = location.search.match(/[?&]ans=([^&]+)/);
+    if (!m) return false;
+    try {
+      const a = decAns(m[1]);
+      const ids = new Set(RULES["題目"].map((q) => q.id));
+      if (!a || typeof a !== "object" || !Object.keys(a).every((k) => ids.has(k))) return false;
+      answers = a; shared = true; showResult();
+      return true;
+    } catch (e) { return false; }
+  }
 
   // ---------- 士倫怎麼說（2026-11-28）：依客戶的回答，從士倫觀點挑出相關的句子 ----------
   const recOf = (carId) => [].concat((INTRO[carId] || {}).推薦版本 || []).filter(Boolean);
@@ -418,6 +471,9 @@
       const text = [].concat(a).map((id) => q.選項.find((o) => o.id === id).文字).join("、");
       lines.push(`・${q.題目.replace(/？$/, "")}：${text}`);
     }
+    const X = RULES["結果後小問題"];
+    if (X) for (const q of X.題目) if (extra[q.id]) lines.push(`・${q.題目.replace(/？$/, "")}：${extra[q.id]}`);
+    if (shared) lines.splice(1, 0, "（這是家人傳給我的結果）");
     lines.push("", "想請你幫我確認版本，並約時間賞車試乘。");
     return lines.join("\n");
   }
@@ -506,6 +562,8 @@
   $("result-back").addEventListener("click", () => goBack(() => { const q = history.pop(); if (q) { showQuestion(q); show("quiz", { state: { q } }); } else show("home"); }));
   $("brandbar").addEventListener("click", (e) => { e.preventDefault(); goHome(); });
   $("send-line").addEventListener("click", sendLine);
+  $("extra-q").addEventListener("click", onExtra);
+  $("shared-quiz").addEventListener("click", startQuiz);
   document.addEventListener("click", onSwatch);  // 結果頁、車款介紹頁的色點都適用
   $("cards").addEventListener("click", (e) => { const b = e.target.closest(".more-link"); if (b) window.Model.open(b.dataset.model); });
   $("res-models").addEventListener("click", (e) => { const b = e.target.closest("[data-model]"); if (b) window.Model.open(b.dataset.model); });

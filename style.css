@@ -535,3 +535,14 @@ h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.25; }
 .voice-why p { margin: 6px 0 0; }
 .card-more { margin-top: 10px; font-size: 14px; }
 .card-more > summary { cursor: pointer; color: var(--accent); font-weight: 600; padding: 6px 0; }
+
+/* 結果後小問題、傳給家人（2026-11-28） */
+.extra-q { margin: 12px 0 14px; padding: 12px; background: #fff; border: 1px solid var(--line); border-radius: 12px; text-align: left; }
+.extra-h { margin: 0 0 6px; font-weight: 700; font-size: 15px; color: var(--ink); }
+.extra-h span { display: block; font-weight: 400; font-size: 12px; color: var(--muted); }
+.extra-l { margin: 10px 0 6px; font-size: 14px; color: var(--ink); }
+.extra-opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.extra-opt { border: 1.5px solid var(--line); background: #fff; color: var(--ink); border-radius: 99px; padding: 7px 12px; font-size: 14px; min-height: 40px; }
+.extra-opt[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.shared-banner { margin: 0 0 12px; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); font-size: 14px; }
+.shared-banner .next-link { display: block; margin-top: 6px; }
